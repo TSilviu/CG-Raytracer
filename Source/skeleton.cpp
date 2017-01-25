@@ -17,6 +17,9 @@ const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
 int t;
+vec3 camera = vec3(0.0f,0.0f, -1.0f);
+float f = 1.0f;
+float yaw = 0.0f;
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -34,7 +37,6 @@ void Draw(const vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
 bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
 
-vector<vec3> stars( 1000 );
 int main( int argc, char* argv[] )
 {
 
@@ -61,12 +63,32 @@ void Update()
 	float dt = float(t2-t);
 	t = t2;
 	cout << "Render time: " << dt << " ms." << endl;
+
+    Uint8* keystate = SDL_GetKeyState( 0 );
+    if( keystate[SDLK_UP] )
+    {
+		camera.z+=0.1f;
+    }
+    if( keystate[SDLK_DOWN] )
+    {
+		camera.z-=0.1f;
+    }
+    if( keystate[SDLK_LEFT] )
+    {
+		camera.x-=0.1f;
+    }
+
+	if( keystate[SDLK_RIGHT] ) {
+		yaw = 0.01f;
+		mat3     R = mat3(vec3(cos(yaw), 0, sin(yaw)), vec3(0, 1, 0), vec3(-sin(yaw), 0, cos(yaw)));
+		camera = R*camera;
+	}
 }
 
 bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 	closestIntersection.distance = std::numeric_limits<float>::max();
 	closestIntersection.triangleIndex = -1;
-	for (int i = 0; i<triangles.size(); ++i) {
+	for (uint i = 0; i<triangles.size(); ++i) {
 		const vec3 v0 = triangles[i].v0;
 		const vec3 v1 = triangles[i].v1;
 		const vec3 v2 = triangles[i].v2;
@@ -81,8 +103,8 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 		const float v = x.z;
 
 
-		if(t>0 && closestIntersection.distance > t && u>=0 && v>=0 && u+v<=1) {
-			closestIntersection.position = v0 + u*e1 + u*e2;
+		if(t>0 && closestIntersection.distance > t && u>=0 && v>=0 && (u+v)<=1) {
+			closestIntersection.position = v0 + u*e1 + v*e2;
 			closestIntersection.distance = t; 
 			closestIntersection.triangleIndex = i; 
 		}
@@ -114,22 +136,21 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-
-	float f = 1.0f;
-	vec3 color(0.0f, 0.0f, 0.0f);
-	vec3 camera = vec3(0.0f,0.0f, -1.0f);
-	#pragma omp parallel for firstprivate(color)
+	#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
 		{	
 			Intersection inter;
-			const float x_axis = (x - SCREEN_WIDTH/2.0)/(SCREEN_WIDTH/2.0);
-			const float y_axis = (y - SCREEN_HEIGHT/2.0)/(SCREEN_HEIGHT/2.0);
+			vec3 color;
+			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0f);
+			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0f);
 			const vec3 dir(x_axis, y_axis, f);
 			const vec3 start(x_axis, y_axis, camera.z);
-			if(ClosestIntersection(start, dir, triangles, inter)) {
+			if(ClosestIntersection(camera, dir, triangles, inter)) {
 				color = triangles[inter.triangleIndex].color;
+			} else {
+				color = vec3(1.0f, 1.0f, 1.0f);
 			}
 			PutPixelSDL( screen, x, y, color );
 		}
