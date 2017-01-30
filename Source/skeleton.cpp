@@ -173,11 +173,12 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	float aux = max(dot(r, n), 0.0f);
 	vec3 D = B*aux;
 
+
 	Intersection objToLight;
-	if(ClosestIntersection(i.position, r, triangles, objToLight))
-		if(objToLight.distance < radius)
+	if(ClosestIntersection(i.position+r* 0.0001f, r, triangles, objToLight))
+		if(objToLight.distance < radius*0.99f)
 			D = vec3(0.f, 0.f, 0.f); 
-				
+
 	return D;
 }
 
