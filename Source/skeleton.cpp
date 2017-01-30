@@ -9,6 +9,8 @@ using namespace std;
 using glm::vec3;
 using glm::mat3;
 
+#define RotationSpeed 0.05f
+#define MoveSpeed 0.2f
 
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
@@ -21,7 +23,7 @@ vec3 camera(0.0f,0.0f, -4.0f);
 float f = 3.0f;
 float yaw = 0.0f;
 
-mat3     R;
+mat3     cameraR;
 vec3 lightPos( 0, -0.5, -0.7 );
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 /* ----------------------------------------------------------------------------*/
@@ -70,35 +72,51 @@ void Update()
 	cout << "Render time: " << dt << " ms." << endl;
 
     Uint8* keystate = SDL_GetKeyState( 0 );
+
+    //Get camera direction
+	vec3 right(cameraR[0][0], cameraR[0][1], cameraR[0][2]);
+	vec3 down(cameraR[1][0], cameraR[1][1], cameraR[1][2]);
+	vec3 forward(cameraR[2][0], cameraR[2][1], cameraR[2][2]);
+
     if( keystate[SDLK_UP] )
     {
-		camera.z+=0.1f;
+		camera += MoveSpeed*forward;
     }
     if( keystate[SDLK_DOWN] )
     {
-		camera.z-=0.1f;
+		camera-= MoveSpeed*forward;
     }
     if( keystate[SDLK_LEFT] )
     {
-		yaw += 0.01f;
-		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		yaw += RotationSpeed;
+		cameraR = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 		//camera.x-=0.1f;
     }
 
 	if( keystate[SDLK_RIGHT] ) {
-		yaw -= 0.01f;
-		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		yaw -= RotationSpeed;
+		cameraR = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 		//camera = R*camera;
 		//camera.x+=0.1f;
 	}
+
     if( keystate[SDLK_q] )
     {
-		camera.x-=0.1f;
+		camera -= MoveSpeed*right;
     }
     if( keystate[SDLK_e] ) {
 		//camera = R*camera;
-		camera.x+=0.1f;
+		camera += MoveSpeed*right;
 	}
+    if( keystate[SDLK_w] )
+    {
+		camera -= MoveSpeed*down;
+    }
+    if( keystate[SDLK_s] ) {
+		//camera = R*camera;
+		camera += MoveSpeed*down;
+	}
+
 }
 
 bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
@@ -168,7 +186,7 @@ void Draw(const vector<Triangle>& triangles)
 			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 			const vec3 dir(x_axis, y_axis, f);
 			const vec3 start(x_axis, y_axis, camera.z);
-			if(ClosestIntersection(camera, R*dir, triangles, inter)) {
+			if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 				color = triangles[inter.triangleIndex].color;
 			} else {
 				color = vec3(1.0f, 1.0f, 1.0f);
