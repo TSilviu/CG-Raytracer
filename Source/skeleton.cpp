@@ -12,7 +12,7 @@ using glm::mat3;
 #define RotationSpeed 0.05f
 #define MoveSpeed 0.2f
 #define LightMoveSpeed 0.2f
-
+#define AntiAliasingSamples 4
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -28,6 +28,15 @@ mat3     cameraR;
 vec3 lightPos( 0, -0.5, -0.7 );
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
+
+
+//http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing 
+float jitterMatrix[4 * 2] = {
+    -1.0/4.0,  3.0/4.0,
+     3.0/4.0,  1.0/3.0,
+    -3.0/4.0, -1.0/4.0,
+     1.0/4.0, -3.0/4.0,
+};
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -210,17 +219,21 @@ void Draw(const vector<Triangle>& triangles)
 		for( int x=0; x<SCREEN_WIDTH; ++x )
 		{	
 			Intersection inter;
-			vec3 color;
-			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
-			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
+			vec3 color(0.0f, 0.0f, 0.0f);
+
+			for(int sample = 0; sample <AntiAliasingSamples; ++sample) {
+			const float x_axis = (x - SCREEN_WIDTH/2.0f + jitterMatrix[2*sample])/(SCREEN_WIDTH/2.0);
+			const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
 			const vec3 dir(x_axis, y_axis, f);
-			const vec3 start(x_axis, y_axis, camera.z);
+
 			if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 				vec3 directLight = DirectLight(inter, triangles);
-				color = triangles[inter.triangleIndex].color*(indirectLight + directLight);
+				color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
 			} else {
-				color = vec3(1.0f, 1.0f, 1.0f);
+				color += vec3(1.0f, 1.0f, 1.0f);
 			}
+		}
+			color /= AntiAliasingSamples;
 			PutPixelSDL( screen, x, y, color );
 		}
 	}
