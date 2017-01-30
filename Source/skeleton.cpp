@@ -11,6 +11,7 @@ using glm::mat3;
 
 #define RotationSpeed 0.05f
 #define MoveSpeed 0.2f
+#define LightMoveSpeed 0.2f
 
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
@@ -25,7 +26,7 @@ float yaw = 0.0f;
 
 mat3     cameraR;
 vec3 lightPos( 0, -0.5, -0.7 );
-vec3 lightColor = 14.f * vec3( 1, 1, 1 );
+vec3 lightColor = 1.f * vec3( 1, 1, 1 );
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -78,6 +79,7 @@ void Update()
 	vec3 down(cameraR[1][0], cameraR[1][1], cameraR[1][2]);
 	vec3 forward(cameraR[2][0], cameraR[2][1], cameraR[2][2]);
 
+	//Control camera
     if( keystate[SDLK_UP] )
     {
 		camera += MoveSpeed*forward;
@@ -86,6 +88,8 @@ void Update()
     {
 		camera-= MoveSpeed*forward;
     }
+
+    //Rotate on Y axis 
     if( keystate[SDLK_LEFT] )
     {
 		yaw += RotationSpeed;
@@ -97,19 +101,35 @@ void Update()
 		cameraR = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
 	}
 
-    if( keystate[SDLK_q] )
+    if( keystate[SDLK_j] )
     {
 		camera -= MoveSpeed*right;
     }
-    if( keystate[SDLK_e] ) {
+    if( keystate[SDLK_l] ) {
 		camera += MoveSpeed*right;
 	}
-    if( keystate[SDLK_w] )
+    if( keystate[SDLK_i] )
     {
 		camera -= MoveSpeed*down;
     }
-    if( keystate[SDLK_s] ) {
+    if( keystate[SDLK_k] ) {
 		camera += MoveSpeed*down;
+	}
+
+	//Control lights WASD
+    if( keystate[SDLK_a] )
+    {
+		lightPos.x -= LightMoveSpeed;
+    }
+    if( keystate[SDLK_d] ) {
+		lightPos.x += LightMoveSpeed;
+	}
+    if( keystate[SDLK_w] )
+    {
+		lightPos.y -= LightMoveSpeed;
+    }
+    if( keystate[SDLK_s] ) {
+		lightPos.y += LightMoveSpeed;
 	}
 
 }
@@ -145,8 +165,7 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal										//Power per real surface
-	//vec3 B; 										//Power from the 
+	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal									
 	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
 	float radius = distance(lightPos, i.position);	//Distance |lightPos-i.position|
 	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);	
@@ -189,7 +208,8 @@ void Draw(const vector<Triangle>& triangles)
 			const vec3 dir(x_axis, y_axis, f);
 			const vec3 start(x_axis, y_axis, camera.z);
 			if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
-				color = triangles[inter.triangleIndex].color;
+				vec3 directLight = DirectLight(inter, triangles);
+				color = triangles[inter.triangleIndex].color*directLight;
 			} else {
 				color = vec3(1.0f, 1.0f, 1.0f);
 			}
