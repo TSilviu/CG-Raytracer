@@ -17,7 +17,7 @@ CC=g++ -fopenmp
 ########
 #       SDL options
 SDL_CFLAGS := $(shell sdl-config --cflags)
-GLM_CFLAGS := -I /usr/local/Cellar/glm/0.9.6.1
+GLM_CFLAGS := -I$(GLMDIR)
 SDL_LDFLAGS := $(shell sdl-config --libs)
 
 ########

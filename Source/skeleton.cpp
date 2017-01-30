@@ -26,7 +26,7 @@ float yaw = 0.0f;
 
 mat3     cameraR;
 vec3 lightPos( 0, -0.5, -0.7 );
-vec3 lightColor = 1.f * vec3( 1, 1, 1 );
+vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -167,11 +167,17 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal									
 	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
+
 	float radius = distance(lightPos, i.position);	//Distance |lightPos-i.position|
 	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);	
 	float aux = max(dot(r, n), 0.0f);
 	vec3 D = B*aux;
 
+	Intersection objToLight;
+	if(ClosestIntersection(i.position, r, triangles, objToLight))
+		if(objToLight.distance < radius)
+			D = vec3(0.f, 0.f, 0.f); 
+				
 	return D;
 }
 
