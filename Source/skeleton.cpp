@@ -90,14 +90,11 @@ void Update()
     {
 		yaw += RotationSpeed;
 		cameraR = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
-		//camera.x-=0.1f;
     }
 
 	if( keystate[SDLK_RIGHT] ) {
 		yaw -= RotationSpeed;
 		cameraR = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
-		//camera = R*camera;
-		//camera.x+=0.1f;
 	}
 
     if( keystate[SDLK_q] )
@@ -105,7 +102,6 @@ void Update()
 		camera -= MoveSpeed*right;
     }
     if( keystate[SDLK_e] ) {
-		//camera = R*camera;
 		camera += MoveSpeed*right;
 	}
     if( keystate[SDLK_w] )
@@ -113,7 +109,6 @@ void Update()
 		camera -= MoveSpeed*down;
     }
     if( keystate[SDLK_s] ) {
-		//camera = R*camera;
 		camera += MoveSpeed*down;
 	}
 
@@ -150,10 +145,17 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec3 D;
-	vec3 n = triangles[i.triangleIndex].normal;
-	return n;
+	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal										//Power per real surface
+	//vec3 B; 										//Power from the 
+	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
+	float radius = distance(lightPos, i.position);	//Distance |lightPos-i.position|
+	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);	
+	float aux = max(dot(r, n), 0.0f);
+	vec3 D = B*aux;
+
+	return D;
 }
+
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	const int size = result.size();
 	float step_x = (b.x-a.x)/float(size-1);
