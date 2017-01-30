@@ -17,9 +17,13 @@ const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
 int t;
-vec3 camera = vec3(0.0f,0.0f, -1.0f);
-float f = 1.0f;
+vec3 camera(0.0f,0.0f, -4.0f);
+float f = 3.0f;
 float yaw = 0.0f;
+
+mat3     R;
+vec3 lightPos( 0, -0.5, -0.7 );
+vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -36,6 +40,7 @@ void Update();
 void Draw(const vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
 bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
+vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 
 int main( int argc, char* argv[] )
 {
@@ -75,13 +80,24 @@ void Update()
     }
     if( keystate[SDLK_LEFT] )
     {
-		camera.x-=0.1f;
+		yaw += 0.01f;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		//camera.x-=0.1f;
     }
 
 	if( keystate[SDLK_RIGHT] ) {
-		yaw = 0.01f;
-		mat3     R = mat3(vec3(cos(yaw), 0, sin(yaw)), vec3(0, 1, 0), vec3(-sin(yaw), 0, cos(yaw)));
-		camera = R*camera;
+		yaw -= 0.01f;
+		R = mat3(cos(yaw), 0, sin(yaw), 0, 1, 0, -sin(yaw), 0, cos(yaw));
+		//camera = R*camera;
+		//camera.x+=0.1f;
+	}
+    if( keystate[SDLK_q] )
+    {
+		camera.x-=0.1f;
+    }
+    if( keystate[SDLK_e] ) {
+		//camera = R*camera;
+		camera.x+=0.1f;
 	}
 }
 
@@ -103,7 +119,7 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 		const float v = x.z;
 
 
-		if(t>0 && closestIntersection.distance > t && u>=0 && v>=0 && (u+v)<=1) {
+		if(t>=0 && closestIntersection.distance > t && u>=0 && v>=0 && (u+v)<=1) {
 			closestIntersection.position = v0 + u*e1 + v*e2;
 			closestIntersection.distance = t; 
 			closestIntersection.triangleIndex = i; 
@@ -115,6 +131,11 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 	return true;
 }
 
+vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
+	vec3 D;
+	vec3 n = triangles[i.triangleIndex].normal;
+	return n;
+}
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	const int size = result.size();
 	float step_x = (b.x-a.x)/float(size-1);
@@ -143,11 +164,11 @@ void Draw(const vector<Triangle>& triangles)
 		{	
 			Intersection inter;
 			vec3 color;
-			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0f);
-			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0f);
+			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
+			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 			const vec3 dir(x_axis, y_axis, f);
 			const vec3 start(x_axis, y_axis, camera.z);
-			if(ClosestIntersection(camera, dir, triangles, inter)) {
+			if(ClosestIntersection(camera, R*dir, triangles, inter)) {
 				color = triangles[inter.triangleIndex].color;
 			} else {
 				color = vec3(1.0f, 1.0f, 1.0f);
