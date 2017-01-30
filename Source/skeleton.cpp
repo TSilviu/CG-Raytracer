@@ -27,6 +27,7 @@ float yaw = 0.0f;
 mat3     cameraR;
 vec3 lightPos( 0, -0.5, -0.7 );
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
+vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
 /* ----------------------------------------------------------------------------*/
 
 /* STRUCTURES 								*/
@@ -175,8 +176,8 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 
 
 	Intersection objToLight;
-	if(ClosestIntersection(i.position+r* 0.0001f, r, triangles, objToLight))
-		if(objToLight.distance < radius*0.99f)
+	if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
+		if(objToLight.distance < radius)
 			D = vec3(0.f, 0.f, 0.f); 
 
 	return D;
@@ -216,7 +217,7 @@ void Draw(const vector<Triangle>& triangles)
 			const vec3 start(x_axis, y_axis, camera.z);
 			if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 				vec3 directLight = DirectLight(inter, triangles);
-				color = triangles[inter.triangleIndex].color*directLight;
+				color = triangles[inter.triangleIndex].color*(indirectLight + directLight);
 			} else {
 				color = vec3(1.0f, 1.0f, 1.0f);
 			}
