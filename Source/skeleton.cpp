@@ -11,8 +11,11 @@ using glm::mat3;
 
 #define RotationSpeed 0.05f
 #define MoveSpeed 0.2f
+
 #define LightMoveSpeed 0.2f
-#define AntiAliasingSamples 4
+#define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
+#define DOFSamples 16
+#define Aperture 1.0f
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -25,11 +28,11 @@ float f = 3.0f;
 float yaw = 0.0f;
 
 mat3     cameraR;
-vec3 lightPos( 0, -0.5, -0.7 );
+vec3 lightPos( 0.0f, -0.5f, -0.7f );
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
-
-
+vec3 focusPoint(0.0f, 0.0f, 0.0f);
+float focal_depth = 4.0f;
 //http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing 
 float jitterMatrix[4 * 2] = {
     -1.0/4.0,  3.0/4.0,
@@ -142,6 +145,17 @@ void Update()
 		lightPos.y += LightMoveSpeed;
 	}
 
+	//Change focal_depth
+	if( keystate[SDLK_1] )
+    {
+		focal_depth -= 1.0f;
+		printf("Focal depth changed to %f\n", focal_depth);
+    }
+    if( keystate[SDLK_2] ) {
+		focal_depth += 1.0f;
+		printf("Focal depth changed to %f\n", focal_depth);
+	}
+
 }
 
 bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
@@ -174,6 +188,7 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 	return true;
 }
 
+
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal									
 	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
@@ -192,6 +207,7 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	return D;
 }
 
+//Not used anywhere, might be useful later
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	const int size = result.size();
 	float step_x = (b.x-a.x)/float(size-1);
@@ -208,6 +224,38 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	}
 }
 
+/*
+//The camera model now also takes into account the aperture
+//This allows the generation of different DOFs by shooting rays through a pixel 
+//from different starting positions
+//http://stackoverflow.com/questions/13532947/references-for-depth-of-field-implementation-in-a-raytracer
+*/
+// void ApplyDOF() {
+// 	#pragma omp parallel for
+// 	for( int y=0; y<SCREEN_HEIGHT; ++y )
+// 	{
+// 		for( int x=0; x<SCREEN_WIDTH; ++x )
+// 		{	
+// 			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
+// 			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
+
+// 			for( int s=0; s<DOFSamples; ++s) {
+// 				float aperture_x = ((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f;
+// 	            float aperture_y = ((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f;
+// 	            vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
+// 				const vec3 dir(x_axis, y_axis, f);
+
+// 				if(ClosestIntersection(camera + cameraOffset, cameraR*dir, triangles, inter)) {
+// 					vec3 directLight = DirectLight(inter, triangles);
+// 					color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
+// 				} else {
+// 					color += vec3(1.0f, 1.0f, 1.0f);
+// 				}
+// 			}
+// 		}
+// 	}
+
+// }
 void Draw(const vector<Triangle>& triangles)
 {
 	if( SDL_MUSTLOCK(screen) )
@@ -220,20 +268,43 @@ void Draw(const vector<Triangle>& triangles)
 		{	
 			Intersection inter;
 			vec3 color(0.0f, 0.0f, 0.0f);
-
+			/*
+			//Shoots multiple rays from the camera to a single pixel(same start, slightly different direction)
+			//Colects all of the colours for the pixels and averages them at the end, resulting in "soft edges"
+			*/
 			for(int sample = 0; sample <AntiAliasingSamples; ++sample) {
-			const float x_axis = (x - SCREEN_WIDTH/2.0f + jitterMatrix[2*sample])/(SCREEN_WIDTH/2.0);
-			const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
-			const vec3 dir(x_axis, y_axis, f);
+				const float x_axis = (x - SCREEN_WIDTH/2.0f + jitterMatrix[2*sample])/(SCREEN_WIDTH/2.0);
+				const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
+				const vec3 dir(x_axis, y_axis, f);
 
-			if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
-				vec3 directLight = DirectLight(inter, triangles);
-				color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
-			} else {
-				color += vec3(1.0f, 1.0f, 1.0f);
+				if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
+					vec3 directLight = DirectLight(inter, triangles);
+					color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
+				} else {
+					color += vec3(1.0f, 1.0f, 1.0f);
+				}
 			}
-		}
-			color /= AntiAliasingSamples;
+			for( int s=0; s<DOFSamples; ++s) {
+				const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
+				const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
+				float aperture_x = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
+	            float aperture_y = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
+
+	            vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
+				const vec3 dir(x_axis, y_axis, f);
+				vec3 C = camera + focal_depth* normalize(dir);
+				vec3 ray_dir = C - (camera+cameraOffset);
+				//vec3 conv_dir = normalize(dir) * focal_depth;
+				//vec3 ray_dir = conv_dir - (camera + cameraOffset);
+
+				if(ClosestIntersection(camera + cameraOffset, cameraR*ray_dir, triangles, inter)) {
+					vec3 directLight = DirectLight(inter, triangles);
+					color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
+				} else {
+					color += vec3(1.0f, 1.0f, 1.0f);
+				}
+			}
+			color /= ( DOFSamples + AntiAliasingSamples);
 			PutPixelSDL( screen, x, y, color );
 		}
 	}
