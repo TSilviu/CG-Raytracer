@@ -14,8 +14,9 @@ using glm::mat3;
 
 #define LightMoveSpeed 0.2f
 #define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
-#define DOFSamples 16
+#define DOFSamples 0
 #define Aperture 1.0f
+#define SoftShadowsSamples 10
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -33,6 +34,7 @@ vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
 vec3 focusPoint(0.0f, 0.0f, 0.0f);
 float focal_depth = 4.0f;
+const float lightL = 0.2f;
 //http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing
 float jitterMatrix[4 * 2] = {
     -1.0/4.0,  3.0/4.0,
@@ -188,22 +190,33 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 	return true;
 }
 
-
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
-	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
-
-	float radius = glm::distance(lightPos, i.position);	//Distance |lightPos-i.position|
-	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);
-	float aux = max(dot(r, n), 0.0f);
-	vec3 D = B*aux;
-
+	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
-	if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
-		if(objToLight.distance < radius)
-			D = vec3(0.f, 0.f, 0.f);
+	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
+		float rand_x, rand_z;
+		if(SoftShadowsSamples != 1) {//Use the center of the light if soft shadows are not used
+			rand_x = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
+	    	rand_z = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
+	    } else rand_x = rand_z = 0.0f;
+		
+    	vec3 ray_destination(lightPos.x + rand_x, lightPos.y, lightPos.z + rand_z);
+    	vec3 r = normalize(ray_destination - i.position);
 
-	return D;
+		float radius = glm::distance(ray_destination, i.position);	//Distance |lightPos-i.position|
+		vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);
+		float aux = max(dot(r, n), 0.0f);
+		vec3 D = B*aux;
+
+		if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight)) 
+			if(objToLight.distance < radius)
+				average += vec3(0.f, 0.f, 0.f);
+			else average += D;
+		else average += D;
+	} 
+
+	return average/(float) SoftShadowsSamples;
 }
 
 //Not used anywhere, might be useful later
