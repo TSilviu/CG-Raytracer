@@ -33,7 +33,7 @@ vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
 vec3 focusPoint(0.0f, 0.0f, 0.0f);
 float focal_depth = 4.0f;
-//http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing 
+//http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing
 float jitterMatrix[4 * 2] = {
     -1.0/4.0,  3.0/4.0,
      3.0/4.0,  1.0/3.0,
@@ -102,7 +102,7 @@ void Update()
 		camera-= MoveSpeed*forward;
     }
 
-    //Rotate on Y axis 
+    //Rotate on Y axis
     if( keystate[SDLK_LEFT] )
     {
 		yaw += RotationSpeed;
@@ -169,7 +169,7 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 		const vec3 e2 = v2 - v0;				//Edge2
 		const vec3 b = start - v0;
 		const mat3 A( -dir, e1, e2 );
-		const vec3 x = glm::inverse( A ) * b; //Intersection point 
+		const vec3 x = glm::inverse( A ) * b; //Intersection point
 
 		const float t = x.x;
 		const float u = x.y;
@@ -178,8 +178,8 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 
 		if(t>=0 && closestIntersection.distance > t && u>=0 && v>=0 && (u+v)<=1) {
 			closestIntersection.position = v0 + u*e1 + v*e2;
-			closestIntersection.distance = t; 
-			closestIntersection.triangleIndex = i; 
+			closestIntersection.distance = t;
+			closestIntersection.triangleIndex = i;
 		}
 	}
 	if(closestIntersection.triangleIndex == -1) {
@@ -190,19 +190,18 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal									
+	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
 	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
 
-	float radius = distance(lightPos, i.position);	//Distance |lightPos-i.position|
-	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);	
+	float radius = glm::distance(lightPos, i.position);	//Distance |lightPos-i.position|
+	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);
 	float aux = max(dot(r, n), 0.0f);
 	vec3 D = B*aux;
-
 
 	Intersection objToLight;
 	if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
 		if(objToLight.distance < radius)
-			D = vec3(0.f, 0.f, 0.f); 
+			D = vec3(0.f, 0.f, 0.f);
 
 	return D;
 }
@@ -216,7 +215,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	float x = step_x>=0? min(a.x, b.x): max(a.x, b.x);
 	float y = step_y>=0? min(a.y, b.y): max(a.y, b.y);
 	float z = step_z>=0? min(a.z, b.z): max(a.z, b.z);
-	//if(result.size() > 1) 
+	//if(result.size() > 1)
 	for( int i=0; i<size; ++i ) {
 		result[i].x = x + step_x*i;
 		result[i].y = y + step_y*i;
@@ -226,7 +225,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 
 /*
 //The camera model now also takes into account the aperture
-//This allows the generation of different DOFs by shooting rays through a pixel 
+//This allows the generation of different DOFs by shooting rays through a pixel
 //from different starting positions
 //http://stackoverflow.com/questions/13532947/references-for-depth-of-field-implementation-in-a-raytracer
 */
@@ -235,7 +234,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 // 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 // 	{
 // 		for( int x=0; x<SCREEN_WIDTH; ++x )
-// 		{	
+// 		{
 // 			const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
 // 			const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 
@@ -265,7 +264,7 @@ void Draw(const vector<Triangle>& triangles)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
-		{	
+		{
 			Intersection inter;
 			vec3 color(0.0f, 0.0f, 0.0f);
 			/*
@@ -288,14 +287,12 @@ void Draw(const vector<Triangle>& triangles)
 				const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
 				const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 				float aperture_x = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
-	            float aperture_y = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
+	      float aperture_y = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
 
-	            vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
+	      vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
 				const vec3 dir(x_axis, y_axis, f);
 				vec3 C = camera + focal_depth* normalize(dir);
 				vec3 ray_dir = C - (camera+cameraOffset);
-				//vec3 conv_dir = normalize(dir) * focal_depth;
-				//vec3 ray_dir = conv_dir - (camera + cameraOffset);
 
 				if(ClosestIntersection(camera + cameraOffset, cameraR*ray_dir, triangles, inter)) {
 					vec3 directLight = DirectLight(inter, triangles);
