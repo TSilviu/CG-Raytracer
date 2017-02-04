@@ -14,7 +14,7 @@ using glm::mat3;
 
 #define LightMoveSpeed 0.2f
 #define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
-#define DOFSamples 16
+#define DOFSamples 0
 #define Aperture 1.0f
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
@@ -29,10 +29,12 @@ float yaw = 0.0f;
 
 mat3     cameraR;
 vec3 lightPos( 0.0f, -0.5f, -0.7f );
-vec3 lightColor = 14.f * vec3( 1, 1, 1 );
-vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
+vec3 lightColor = 20.f * vec3( 1, 1, 1 );
+vec3 indirectLight = 0.5f * vec3( 1, 1, 1 );
 vec3 focusPoint(0.0f, 0.0f, 0.0f);
 float focal_depth = 4.0f;
+const float lightL = 0.4;
+
 //http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing
 float jitterMatrix[4 * 2] = {
     -1.0/4.0,  3.0/4.0,
@@ -190,20 +192,40 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
-	vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
+  // vec3 topLeft(lightPos.x, lightPos - lightSquare/2, lightPos + lightSquare/2);
+  // vec3 bottomRight(lightPos.x, lightPos - lightSquare/2, lightPos + lightSquare/2);
+  vector<vec3> lightPoints(10);
+  for(int j = 1; j < lightPoints.size(); j++){
+    float rand1 = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
+    float rand2 = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
 
+    vec3 point;
+    point.x = lightPos.x;
+    point.y = lightPos.y + rand1;
+    point.z = lightPos.z + rand2;
+    lightPoints[j] = point;
+  }
+  lightPoints[0] = lightPos;
+
+  vec3 r = normalize(lightPos - i.position);  	//Unit vector from surface to light sphere
+  vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
 	float radius = glm::distance(lightPos, i.position);	//Distance |lightPos-i.position|
 	vec3 B = lightColor / (float) (4.0f*M_PI*radius*radius);
 	float aux = max(dot(r, n), 0.0f);
 	vec3 D = B*aux;
+  vec3 average = vec3(0.f,0.f,0.f);
 
 	Intersection objToLight;
-	if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
-		if(objToLight.distance < radius)
-			D = vec3(0.f, 0.f, 0.f);
+  for(int j = 0; j < lightPoints.size(); j++){
+     r = normalize(lightPoints[j] - i.position);  	//Unit vector from surface to light sphere
+	   if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
+		   if(objToLight.distance < radius)
+			    average += vec3(0.f, 0.f, 0.f);
+       else
+          average += D;
+  }
 
-	return D;
+	return average/10.0f;
 }
 
 //Not used anywhere, might be useful later
