@@ -13,9 +13,10 @@ using glm::mat3;
 #define MoveSpeed 0.2f
 
 #define LightMoveSpeed 0.2f
-#define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
-#define DOFSamples 16
+#define AntiAliasingSamples 100 //For more than 4, the jitter matrix has to be changed
+#define DOFSamples 0
 #define Aperture 1.0f
+#define DT_BLUR 0.001f
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -26,7 +27,6 @@ int t;
 vec3 camera(0.0f,0.0f, -4.0f);
 float f = 3.0f;
 float yaw = 0.0f;
-
 mat3     cameraR;
 vec3 lightPos( 0.0f, -0.5f, -0.7f );
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
@@ -53,10 +53,12 @@ struct Intersection
 /* FUNCTIONS                                                                   */
 
 void Update();
-void Draw(const vector<Triangle>& triangles);
+void Draw(vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
 bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
+void move_object( const float dt, const vector<Triangle>& triangles);
+void reset_object( float dt, const vector<Triangle>& triangles );
 
 int main( int argc, char* argv[] )
 {
@@ -255,25 +257,47 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 // 	}
 
 // }
-void Draw(const vector<Triangle>& triangles)
+
+
+void move_object(float dt, vector<Triangle>& triangles) {
+	for (uint i = 0; i<triangles.size(); ++i) {
+		if(triangles[i].color == vec3(0.75f, 0.15f, 0.15f)) {
+			//triangles[i].SetColor(vec3(0.5f, 0.5f, 0.5f));
+			triangles[i].ChangePosition(vec3(dt*1.f, 0.0f, 0.0f));
+		}
+	}
+}
+
+void reset_object(float dt, vector<Triangle>& triangles) {
+	for (uint i = 0; i<triangles.size(); ++i) {
+		if(triangles[i].color == vec3(0.75f, 0.15f, 0.15f)) {
+			triangles[i].ChangePosition(vec3(dt*(-1.f), 0.0f, 0.0f));
+		}
+	}
+}
+
+void Draw( vector<Triangle>& triangles)
 {
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	#pragma omp parallel for //firstprivate(color)
+	//#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
 		{
 			Intersection inter;
 			vec3 color(0.0f, 0.0f, 0.0f);
+
 			/*
 			//Shoots multiple rays from the camera to a single pixel(same start, slightly different direction)
 			//Colects all of the colours for the pixels and averages them at the end, resulting in "soft edges"
 			*/
 			for(int sample = 0; sample <AntiAliasingSamples; ++sample) {
-				const float x_axis = (x - SCREEN_WIDTH/2.0f + jitterMatrix[2*sample])/(SCREEN_WIDTH/2.0);
-				const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
+				float dt = (float)((rand() % RAND_MAX)) / RAND_MAX;
+				move_object(dt, triangles);
+				const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
+				const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 				const vec3 dir(x_axis, y_axis, f);
 
 				if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
@@ -282,14 +306,15 @@ void Draw(const vector<Triangle>& triangles)
 				} else {
 					color += vec3(1.0f, 1.0f, 1.0f);
 				}
+				reset_object(dt, triangles);
 			}
 			for( int s=0; s<DOFSamples; ++s) {
 				const float x_axis = (x - SCREEN_WIDTH/2.0f)/(SCREEN_WIDTH/2.0);
 				const float y_axis = (y - SCREEN_HEIGHT/2.0f)/(SCREEN_HEIGHT/2.0);
 				float aperture_x = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
-	      float aperture_y = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
+	      		float aperture_y = (((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)/10.0f;
 
-	      vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
+	      		vec3 cameraOffset(aperture_x, aperture_y, 0.0f);
 				const vec3 dir(x_axis, y_axis, f);
 				vec3 C = camera + focal_depth* normalize(dir);
 				vec3 ray_dir = C - (camera+cameraOffset);

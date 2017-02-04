@@ -28,6 +28,17 @@ public:
 		glm::vec3 e2 = v2-v0;
 		normal = glm::normalize( glm::cross( e2, e1 ) );
 	}
+
+	void SetColor(glm::vec3 new_color) {
+		color = new_color;
+	}
+
+	void ChangePosition(glm::vec3 offset) {
+		v0+= offset;
+		v1+= offset;
+		v2+= offset;
+		ComputeNormal();
+	}
 };
 
 // Loads the Cornell Box. It is scaled to fill the volume:
