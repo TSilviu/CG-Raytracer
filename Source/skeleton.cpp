@@ -16,7 +16,7 @@ using glm::mat3;
 #define AntiAliasingSamples 2 //For more than 4, the jitter matrix has to be changed
 #define DOFSamples 5
 #define Aperture 1.0f
-#define SoftShadowsSamples 4
+#define SoftShadowsSamples 1
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -66,6 +66,7 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
+vec3 reflect(const vec3& I, const vec3& N);
 
 int main( int argc, char* argv[] )
 {
@@ -214,7 +215,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 	closestIntersection.distance = std::numeric_limits<float>::max();
 	closestIntersection.triangleIndex = -1;
-	for (uint i = 0; i<triangles.size(); ++i) {
+	for (uint i = 0; i < triangles.size(); ++i) {
 		const vec3 v0 = triangles[i].v0;
 		const vec3 v1 = triangles[i].v1;
 		const vec3 v2 = triangles[i].v2;
@@ -243,6 +244,7 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
+	int ref = triangles[i.triangleIndex].reflective;	//Triangle reflective property
 	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
@@ -261,10 +263,19 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 		vec3 D = B*aux;
 
 		if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
-			if(objToLight.distance < radius)
-				average += vec3(0.f, 0.f, 0.f);
-			else average += D;
-		else average += D;
+			switch(ref){
+				case 0:
+					if(objToLight.distance < radius)
+						average += vec3(0.f, 0.f, 0.f);
+					else average += D;
+					break;
+				case 1:
+					Intersection objToIntersection;
+					vec3 R = reflect(ray_destination,n);
+					ClosestIntersection(i.position+r*0.0001f, R, triangles, objToIntersection);
+					average += 0.8f * triangles[objToIntersection.triangleIndex].color;
+					break;
+		} else average += D;
 	}
 
 	return average/(float) SoftShadowsSamples;
@@ -316,4 +327,8 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		color += vec3(1.0f, 1.0f, 1.0f);
 		}
 	}
+}
+
+vec3 reflect(const vec3& I, const vec3& N){
+	return I - 2 * dot(I,N) * N;
 }
