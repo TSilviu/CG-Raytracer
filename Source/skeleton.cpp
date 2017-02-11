@@ -13,8 +13,8 @@ using glm::mat3;
 #define MoveSpeed 0.2f
 
 #define LightMoveSpeed 0.2f
-#define AntiAliasingSamples 2 //For more than 4, the jitter matrix has to be changed
-#define DOFSamples 5
+#define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
+#define DOFSamples 0
 #define Aperture 1.0f
 #define SoftShadowsSamples 1
 /* ----------------------------------------------------------------------------*/
@@ -38,6 +38,7 @@ const float lightL = 0.2f;  //Square light length
 vec3 lightPos( 0.0f, -0.5f, -0.7f );  //Centre of the light
 vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
+vec3 background(1.0f, 1.0f, 1.0f);
 
 
 //http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing
@@ -66,6 +67,7 @@ bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
+vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
 
 int main( int argc, char* argv[] )
@@ -263,21 +265,11 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 		vec3 D = B*aux;
 
 		if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
-			switch(ref){
-				case 0:
-					if(objToLight.distance < radius)
-						average += vec3(0.f, 0.f, 0.f);
-					else average += D;
-					break;
-				case 1:
-					Intersection objToIntersection;
-					vec3 R = reflect(ray_destination,n);
-					ClosestIntersection(i.position+r*0.0001f, R, triangles, objToIntersection);
-					average += 0.8f * triangles[objToIntersection.triangleIndex].color;
-					break;
-		} else average += D;
+			if(objToLight.distance < radius)
+				average += vec3(0.f, 0.f, 0.f);
+			else average += D;
+		else average += D;
 	}
-
 	return average/(float) SoftShadowsSamples;
 }
 
@@ -310,6 +302,19 @@ void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Inte
 	}
 }
 
+vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color) {
+	if(triangles[inter.triangleIndex].reflective == 1) {
+    	vec3 r = normalize(dir);
+		Intersection objToIntersection;
+		vec3 R = reflect(r, triangles[inter.triangleIndex].normal);
+		vec3 r_r = normalize(R);
+		if (ClosestIntersection(inter.position+r_r*0.0001f, r_r, triangles, objToIntersection)) {
+			return color = color*triangles[objToIntersection.triangleIndex].color;
+		} 
+	}
+	return color;
+}
+
 /*
 //Shoots multiple rays from the camera to a single pixel(same start, slightly different direction)
 //Colects all of the colours for the pixels and averages them at the end, resulting in "soft edges"
@@ -323,12 +328,17 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
 			color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
+
+			color = ApplyReflexions(triangles, dir, inter, color);
+
+
 		} else {
-		color += vec3(1.0f, 1.0f, 1.0f);
+			color += vec3(1.0f, 1.0f, 1.0f);
 		}
 	}
 }
 
 vec3 reflect(const vec3& I, const vec3& N){
-	return I - 2 * dot(I,N) * N;
+	float c1 = -dot( I, N );
+	return I + (2.0f * N * c1 );
 }
