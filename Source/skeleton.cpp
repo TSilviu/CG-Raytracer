@@ -302,14 +302,15 @@ void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Inte
 	}
 }
 
-vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color) {
-	if(triangles[inter.triangleIndex].reflective == 1) {
+#define ReflexionDepth 5
+vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color, int depth) {
+	if(triangles[inter.triangleIndex].reflective == 1 && depth < ReflexionDepth) {
     	vec3 r = normalize(dir);
 		Intersection objToIntersection;
 		vec3 R = reflect(r, triangles[inter.triangleIndex].normal);
 		vec3 r_r = normalize(R);
 		if (ClosestIntersection(inter.position+r_r*0.0001f, r_r, triangles, objToIntersection)) {
-			return color = color*triangles[objToIntersection.triangleIndex].color;
+			return ApplyReflexions(triangles, r_r, objToIntersection, color, ++depth)*triangles[objToIntersection.triangleIndex].color;
 		} 
 	}
 	return color;
@@ -327,9 +328,9 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
-			color += triangles[inter.triangleIndex].color*(indirectLight + directLight);
+		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, triangles[inter.triangleIndex].color, 0);
+			color += color_reflections*(indirectLight + directLight);
 
-			color = ApplyReflexions(triangles, dir, inter, color);
 
 
 		} else {

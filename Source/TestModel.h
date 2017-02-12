@@ -47,7 +47,7 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	vec3 blue(   0.15f, 0.15f, 0.75f );
 	vec3 purple( 0.75f, 0.15f, 0.75f );
 	vec3 white(  0.75f, 0.75f, 0.75f );
-
+	vec3 pure_white( 1.0f, 1.0f, 1.0f );
 	triangles.clear();
 	triangles.reserve( 5*2*3 );
 
@@ -71,8 +71,8 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	triangles.push_back( Triangle( C, D, B, green, 0 ) );
 
 	// Left wall
-	triangles.push_back( Triangle( A, E, C, purple, 1 ) );
-	triangles.push_back( Triangle( C, E, G, purple, 1 ) );
+	triangles.push_back( Triangle( A, E, C, pure_white, 1 ) );
+	triangles.push_back( Triangle( C, E, G, pure_white, 1 ) );
 
 	// Right wall
 	triangles.push_back( Triangle( F, B, D, yellow, 0 ) );
@@ -100,24 +100,24 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	H = vec3( 82,165,225);
 
 	// Front
-	triangles.push_back( Triangle(E,B,A,red, 0) );
-	triangles.push_back( Triangle(E,F,B,red, 0) );
+	triangles.push_back( Triangle(E,B,A,red, 1) );
+	triangles.push_back( Triangle(E,F,B,red, 1) );
 
 	// Front
-	triangles.push_back( Triangle(F,D,B,red, 0) );
-	triangles.push_back( Triangle(F,H,D,red, 0) );
+	triangles.push_back( Triangle(F,D,B,red, 1) );
+	triangles.push_back( Triangle(F,H,D,red, 1) );
 
 	// BACK
-	triangles.push_back( Triangle(H,C,D,red, 0) );
-	triangles.push_back( Triangle(H,G,C,red, 0) );
+	triangles.push_back( Triangle(H,C,D,red, 1) );
+	triangles.push_back( Triangle(H,G,C,red, 1) );
 
 	// LEFT
-	triangles.push_back( Triangle(G,E,C,red, 0) );
-	triangles.push_back( Triangle(E,A,C,red, 0) );
+	triangles.push_back( Triangle(G,E,C,red, 1) );
+	triangles.push_back( Triangle(E,A,C,red, 1) );
 
 	// TOP
-	triangles.push_back( Triangle(G,F,E,red, 0) );
-	triangles.push_back( Triangle(G,H,F,red, 0) );
+	triangles.push_back( Triangle(G,F,E,red, 1) );
+	triangles.push_back( Triangle(G,H,F,red, 1) );
 
 	// ---------------------------------------------------------------------------
 	// Tall block
@@ -133,24 +133,24 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	H = vec3(314,330,456);
 
 	// Front
-	triangles.push_back( Triangle(E,B,A,blue,0) );
-	triangles.push_back( Triangle(E,F,B,blue,0) );
+	triangles.push_back( Triangle(E,B,A,blue, 1) );
+	triangles.push_back( Triangle(E,F,B,blue, 1) );
 
 	// Front
-	triangles.push_back( Triangle(F,D,B,blue,0) );
-	triangles.push_back( Triangle(F,H,D,blue,0) );
+	triangles.push_back( Triangle(F,D,B,blue, 1) );
+	triangles.push_back( Triangle(F,H,D,blue, 1) );
 
 	// BACK
-	triangles.push_back( Triangle(H,C,D,blue,0) );
-	triangles.push_back( Triangle(H,G,C,blue,0) );
+	triangles.push_back( Triangle(H,C,D,blue, 1) );
+	triangles.push_back( Triangle(H,G,C,blue, 1) );
 
 	// LEFT
-	triangles.push_back( Triangle(G,E,C,blue,0) );
-	triangles.push_back( Triangle(E,A,C,blue,0) );
+	triangles.push_back( Triangle(G,E,C,blue, 1) );
+	triangles.push_back( Triangle(E,A,C,blue, 1) );
 
 	// TOP
-	triangles.push_back( Triangle(G,F,E,blue,0) );
-	triangles.push_back( Triangle(G,H,F,blue,0) );
+	triangles.push_back( Triangle(G,F,E,blue, 1) );
+	triangles.push_back( Triangle(G,H,F,blue, 1) );
 
 
 	// ----------------------------------------------
