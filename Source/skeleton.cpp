@@ -4,6 +4,7 @@
 #include <limits.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
+#include "ObjLoader.h"
 
 using namespace std;
 using glm::vec3;
@@ -246,7 +247,6 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
-	int ref = triangles[i.triangleIndex].reflective;	//Triangle reflective property
 	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
