@@ -8,7 +8,7 @@
 #include "TestModel.h"
 
 
-bool LoadObject(std::vector<Triangle>& triangles, char* filename) {
+bool LoadObject(std::vector<Triangle>& triangles, const char* filename) {
 	FILE * file = fopen(filename, "r");
 
 	if( file == NULL ){
