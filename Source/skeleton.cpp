@@ -75,7 +75,10 @@ int main( int argc, char* argv[] )
 {
 
 	vector<Triangle> triangles;
-	LoadTestModel(triangles);
+	//LoadTestModel(triangles);
+	if(LoadObject(triangles, "triangle_object.obj")) {
+		printf("Model Loaded succesfuly\n");
+	} else return 0;
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
