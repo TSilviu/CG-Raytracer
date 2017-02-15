@@ -76,7 +76,7 @@ int main( int argc, char* argv[] )
 
 	vector<Triangle> triangles;
 	//LoadTestModel(triangles);
-	char const* filename = "triangle_object.obj";
+	char const* filename = "teapot_high_poly.obj";
 	if(LoadObject(triangles, filename)) {
 		printf("Model Loaded succesfuly\n");
 	} else return 0;
