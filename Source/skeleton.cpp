@@ -13,11 +13,12 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
-//#define TEXTURES_CIMG
+#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
 	#include "CImg/CImg.h"
+	using namespace cimg_library;
 #endif
 
 //#define TEXTURES_SDL
@@ -86,12 +87,13 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
 
-void LoadTexture();
+void LoadTexture(const char* texture_file);
 
 int main( int argc, char* argv[] )
 {
 	#ifdef TEXTURES_CIMG
-		LoadTexture();
+		const char* texture = "Textures/text1.jpg";
+		LoadTexture(texture);
 		return 1;
 	#endif
 
@@ -397,15 +399,11 @@ vec3 pixelFromTexture(vec2 pos, int height, int width) {
 }
 
 #ifdef TEXTURES_CIMG
-void LoadTexture() {
-	CImg<unsigned char> image("Textures/text1.jpg");
+void LoadTexture(const char* texture_file) {
+	CImg<unsigned char> image(texture_file);
 	int width = image.width();
 	int height = image.height();
-	cout<<width<< " "<< height;
-	for(int i = 0; i< width; i++) 
-		for(int j =0; j<height; j++) {
-			cout<< (int)image(i, j, 0, 0) <<"\n";
-		}
+
 }
 #endif
 
