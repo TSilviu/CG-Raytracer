@@ -13,13 +13,17 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
-#define TEXTURES_CIMG
+#define CORNELL_BOX
+#define TEXTURS_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
 	#include "CImg/CImg.h"
 	using namespace cimg_library;
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
+	vec3 pixelFromTexture(vec2 pos, int height, int width);
+	vec2 barycentricCoordinates(Triangle t, vec3 p);
+	CImg<unsigned char> texture;
 #endif
 
 //#define TEXTURES_SDL
@@ -93,16 +97,19 @@ int main( int argc, char* argv[] )
 {
 	#ifdef TEXTURES_CIMG
 		const char* texture_path = "Textures/text1.jpg";
-		CImg<unsigned char> texture;
 		LoadTexture(texture_path, texture);
 	#endif
 
 	vector<Triangle> triangles;
-	//LoadTestModel(triangles);
-	char const* filename = "Models/LowPolyBody.obj";
-	if(LoadObject(triangles, filename)) {
-		printf("Model Loaded succesfuly\n");
-	} else return 0;
+
+	#ifdef CORNELL_BOX
+		LoadTestModel(triangles);
+	#else 
+		char const* filename = "Models/LowPolyBody.obj";
+		if(LoadObject(triangles, filename)) {
+			printf("Model Loaded succesfuly\n");
+		} else return 0;
+	#endif
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
@@ -371,6 +378,7 @@ vec3 reflect(const vec3& I, const vec3& N){
 	return I + (2.0f * N * c1 );
 }
 
+#ifdef TEXTURES_CIMG
 vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 	vec3 a = t.v0;
@@ -395,10 +403,13 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 vec3 pixelFromTexture(vec2 pos, int height, int width) {
 	int img_x = (int) (pos.x*width);
 	int img_y = (int) (pos.x*height);
-	return vec3(0.f,0.f,0.f);
+	float r = (float) texture(img_x, img_y, 0, 0)/255.f;
+	float g = (float) texture(img_x, img_y, 0, 1)/255.f;
+	float b = (float) texture(img_x, img_y, 0, 2)/255.f;
+	return vec3(r, g, b);
 }
 
-#ifdef TEXTURES_CIMG
+
 void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image) {
 	image = CImg<unsigned char>(texture_file);
 	//TODO: Should add some error handling :) 
