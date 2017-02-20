@@ -6,14 +6,19 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include "ObjLoader.h"
-#include "CImg/CImg.h"
 
 using namespace std;
-using namespace cimg_library;
 
 using glm::vec3;
 using glm::vec2;
 using glm::mat3;
+
+//#define TEXTURES_CIMG
+
+#ifdef TEXTURES_CIMG
+	#define cimg_use_jpeg
+	#include "CImg/CImg.h"
+#endif
 
 #define RotationSpeed 0.05f	//Camera rotation speed
 #define MoveSpeed 0.2f
@@ -76,15 +81,14 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
 
+void LoadTexture();
+
 int main( int argc, char* argv[] )
 {
-
-	vector<Triangle> triangles;
-	//LoadTestModel(triangles);
-	char const* filename = "Models/LowPolyBody.obj";
-	if(LoadObject(triangles, filename)) {
-		printf("Model Loaded succesfuly\n");
-	} else return 0;
+	#ifdef TEXTURES_CIMG
+		LoadTexture();
+		return 1;
+	#endif
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
@@ -380,9 +384,18 @@ vec3 pixelFromTexture(vec2 pos, int height, int width) {
 	return vec3(0.f,0.f,0.f);
 }
 
+#ifdef TEXTURES_CIMG
 void LoadTexture() {
-	 CImg<unsigned char> image("lena.jpg");
+	CImg<unsigned char> image("Textures/text1.jpg");
+	int width = image.width();
+	int height = image.height();
+	cout<<width<< " "<< height;
+	for(int i = 0; i< width; i++) 
+		for(int j =0; j<height; j++) {
+			cout<< (int)image(i, j, 0, 0) <<"\n";
+		}
 }
+#endif
 
 
 
