@@ -11,8 +11,8 @@ EXEC=$(B_DIR)/$(FILE)
 
 # default build settings
 CC_OPTS=-c -pipe -Wall -Wno-switch -ggdb -g3 -O3
-LN_OPTS=
-CC=g++ -fopenmp
+LN_OPTS=-lX11 
+CC=g++ -fopenmp -L/usr/X11/lib -I/usr/X11/include
 
 ########
 #       SDL options

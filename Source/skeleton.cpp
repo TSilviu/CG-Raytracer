@@ -2,12 +2,15 @@
 #include <glm/glm.hpp>
 #include <SDL.h>
 #include <limits.h>
+#include <X11/Xlib.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include "ObjLoader.h"
 #include "CImg/CImg.h"
 
 using namespace std;
+using namespace cimg_library;
+
 using glm::vec3;
 using glm::vec2;
 using glm::mat3;
@@ -377,6 +380,9 @@ vec3 pixelFromTexture(vec2 pos, int height, int width) {
 	return vec3(0.f,0.f,0.f);
 }
 
+void LoadTexture() {
+	 CImg<unsigned char> image("lena.jpg");
+}
 
 
 
