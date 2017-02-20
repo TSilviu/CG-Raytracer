@@ -20,6 +20,11 @@ using glm::mat3;
 	#include "CImg/CImg.h"
 #endif
 
+//#define TEXTURES_SDL
+#ifdef TEXTURES_SDL
+	#include "SDL_image.h"
+#endif
+
 #define RotationSpeed 0.05f	//Camera rotation speed
 #define MoveSpeed 0.2f
 
@@ -89,6 +94,13 @@ int main( int argc, char* argv[] )
 		LoadTexture();
 		return 1;
 	#endif
+
+	vector<Triangle> triangles;
+	//LoadTestModel(triangles);
+	char const* filename = "Models/LowPolyBody.obj";
+	if(LoadObject(triangles, filename)) {
+		printf("Model Loaded succesfuly\n");
+	} else return 0;
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
