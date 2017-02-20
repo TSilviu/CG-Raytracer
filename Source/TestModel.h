@@ -24,6 +24,7 @@ public:
 		: v0(v0), v1(v1), v2(v2), color(color), reflective(reflective)
 	{
 		ComputeNormal();
+		SetUV(glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 1.0f));
 	}
 
 	void SetUV(glm::vec2 uv0, glm::vec2 uv1, glm::vec2 uv2) {

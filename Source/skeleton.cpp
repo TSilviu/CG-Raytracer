@@ -14,14 +14,14 @@ using glm::vec2;
 using glm::mat3;
 
 #define CORNELL_BOX
-#define TEXTURS_CIMG
+#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
 	#include "CImg/CImg.h"
 	using namespace cimg_library;
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
-	vec3 pixelFromTexture(vec2 pos, int height, int width);
+	vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture);
 	vec2 barycentricCoordinates(Triangle t, vec3 p);
 	CImg<unsigned char> texture;
 #endif
@@ -209,7 +209,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	#pragma omp parallel for //firstprivate(color)
+	//#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -362,10 +362,9 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
-		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, triangles[inter.triangleIndex].color, 0);
+			vec3 texture_color = pixelFromTexture(barycentricCoordinates(triangles[inter.triangleIndex], inter.position), texture);
+		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);
-
-
 
 		} else {
 			color += vec3(1.0f, 1.0f, 1.0f);
@@ -390,19 +389,22 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 	vec2 buv = t.uv1;
 	vec2 cuv = t.uv2;
 
-	float barya = (b.x-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
+	float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
 		  barya /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
 	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
 		  baryb /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
 	float baryc = 1 - barya - baryb;
 
+	cout<<(b.y-c.y)*(p.x-c.x)<< " "<<(c.x-b.x)*(p.y-c.y)<<"\n";
+	cout<<barya<<" "<<baryb<<"\n";
 	return barya*auv + baryb*buv + baryc*cuv;
 
 }
 
-vec3 pixelFromTexture(vec2 pos, int height, int width) {
-	int img_x = (int) (pos.x*width);
-	int img_y = (int) (pos.x*height);
+vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture) {
+	int img_x = (int) (pos.x*texture.width());
+	int img_y = (int) (pos.y*texture.height());
+	cout<<img_x<< " "<< img_y<<"\n";
 	float r = (float) texture(img_x, img_y, 0, 0)/255.f;
 	float g = (float) texture(img_x, img_y, 0, 1)/255.f;
 	float b = (float) texture(img_x, img_y, 0, 2)/255.f;
