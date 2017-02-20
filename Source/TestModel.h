@@ -16,9 +16,9 @@ public:
 	glm::vec3 normal;
 	glm::vec3 color;
 	int reflective;	//reflective property of triangle; can be either 0 or 1
-	glm::vec3 uv0;
-	glm::vec3 uv1;
-	glm::vec3 uv2;
+	glm::vec2 uv0;
+	glm::vec2 uv1;
+	glm::vec2 uv2;
 
 	Triangle( glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, glm::vec3 color, int reflective )
 		: v0(v0), v1(v1), v2(v2), color(color), reflective(reflective)
@@ -26,7 +26,7 @@ public:
 		ComputeNormal();
 	}
 
-	void SetUV(glm::vec3 uv0, glm::vec3 uv1, glm::vec3 uv2) {
+	void SetUV(glm::vec2 uv0, glm::vec2 uv1, glm::vec2 uv2) {
 		this->uv0 = uv0;
 		this->uv1 = uv1;
 		this->uv2 = uv2;

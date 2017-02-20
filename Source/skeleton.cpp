@@ -8,6 +8,7 @@
 
 using namespace std;
 using glm::vec3;
+using glm::vec2;
 using glm::mat3;
 
 #define RotationSpeed 0.05f	//Camera rotation speed
@@ -348,16 +349,16 @@ vec3 reflect(const vec3& I, const vec3& N){
 	return I + (2.0f * N * c1 );
 }
 
-vec3 barycentricCoordinates(Triangle t, vec3 p) {
+vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 	vec3 a = t.v0;
 	vec3 b = t.v1;
 	vec3 c = t.v2;
 
 	//Just for consistency
-	vec3 auv = t.uv0;
-	vec3 buv = t.uv1;
-	vec3 cuv = t.uv2;
+	vec2 auv = t.uv0;
+	vec2 buv = t.uv1;
+	vec2 cuv = t.uv2;
 
 	float barya = (b.x-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
 		  barya /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
@@ -367,6 +368,11 @@ vec3 barycentricCoordinates(Triangle t, vec3 p) {
 
 	return barya*auv + baryb*buv + baryc*cuv;
 
+}
+
+vec3 pixelFromTexture(vec2 ) {
+
+	return vec3(0.f,0.f,0.f);
 }
 
 
