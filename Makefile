@@ -11,8 +11,8 @@ EXEC=$(B_DIR)/$(FILE)
 
 # default build settings
 CC_OPTS=-c -pipe -Wall -Wno-switch -ggdb -g3 -O3
-LN_OPTS=-lSDL_image #for CIMG: -lX11 -ljpeg 
-CC=g++ -fopenmp -L/usr/X11/lib -I/usr/X11/include
+LN_OPTS=-lX11 -ljpeg  #for sdl_image: -lSDL_image 
+CC=g++ -fopenmp -L/usr/X11/lib -I/usr/X11/include #should be replaced with X11 paths for any config
 
 ########
 #       SDL options
