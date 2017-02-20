@@ -22,7 +22,6 @@ using glm::mat3;
 	using namespace cimg_library;
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
 	vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture);
-	vec2 barycentricCoordinates(Triangle t, vec3 p);
 	CImg<unsigned char> texture;
 #endif
 
@@ -91,7 +90,7 @@ void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Inte
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
-
+vec2 barycentricCoordinates(Triangle t, vec3 p);
 
 int main( int argc, char* argv[] )
 {
@@ -209,7 +208,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	//#pragma omp parallel for //firstprivate(color)
+	#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -362,6 +361,7 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
+			//barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
 			vec3 texture_color = pixelFromTexture(barycentricCoordinates(triangles[inter.triangleIndex], inter.position), texture);
 		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);
@@ -377,7 +377,6 @@ vec3 reflect(const vec3& I, const vec3& N){
 	return I + (2.0f * N * c1 );
 }
 
-#ifdef TEXTURES_CIMG
 vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 	vec3 a = t.v0;
@@ -388,23 +387,33 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 	vec2 auv = t.uv0;
 	vec2 buv = t.uv1;
 	vec2 cuv = t.uv2;
-
-	float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
-		  barya /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
-	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
-		  baryb /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
-	float baryc = 1 - barya - baryb;
-
-	cout<<(b.y-c.y)*(p.x-c.x)<< " "<<(c.x-b.x)*(p.y-c.y)<<"\n";
-	cout<<barya<<" "<<baryb<<"\n";
-	return barya*auv + baryb*buv + baryc*cuv;
+	float denom = (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
+	if(denom!=0) {
+		float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
+			  barya /= denom;
+		float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
+			  baryb /= denom;
+		float baryc = 1 - barya - baryb;
+		return barya*auv + baryb*buv + baryc*cuv;
+	} 
+	// cout<<"NewIter\n";
+	// cout<<a.x<< " " <<b.x<<" "<<c.x<<"\n";
+	// cout<<a.y<< " " <<b.y<<" "<<c.y<<"\n";
+	// cout<<a.z<< " " <<b.z<<" "<<c.z<<"\n";
+	// cout<<p.x<< " " <<p.y<<" "<<p.z<<"\n";
+	
+	// cout<<(b.y-c.y)<< " "<<(a.x-c.x)<<"\n";
+	// cout<<(c.x-b.x)<< " "<<(a.y-c.y)<<"\n";
+	
+	// cout<<barya<<" "<<baryb<<"\n";
+	return vec2(0.f,0.f);
 
 }
 
+#ifdef TEXTURES_CIMG
 vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture) {
 	int img_x = (int) (pos.x*texture.width());
 	int img_y = (int) (pos.y*texture.height());
-	cout<<img_x<< " "<< img_y<<"\n";
 	float r = (float) texture(img_x, img_y, 0, 0)/255.f;
 	float g = (float) texture(img_x, img_y, 0, 1)/255.f;
 	float b = (float) texture(img_x, img_y, 0, 2)/255.f;
