@@ -348,7 +348,7 @@ vec3 reflect(const vec3& I, const vec3& N){
 	return I + (2.0f * N * c1 );
 }
 
-vec3 barycentricCoordinates(Triangle t) {
+vec3 barycentricCoordinates(Triangle t, vec3 p) {
 
 	vec3 a = t.v0;
 	vec3 b = t.v1;
