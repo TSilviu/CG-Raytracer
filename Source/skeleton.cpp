@@ -19,6 +19,7 @@ using glm::mat3;
 	#define cimg_use_jpeg
 	#include "CImg/CImg.h"
 	using namespace cimg_library;
+	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
 #endif
 
 //#define TEXTURES_SDL
@@ -87,14 +88,13 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
 
-void LoadTexture(const char* texture_file);
 
 int main( int argc, char* argv[] )
 {
 	#ifdef TEXTURES_CIMG
-		const char* texture = "Textures/text1.jpg";
-		LoadTexture(texture);
-		return 1;
+		const char* texture_path = "Textures/text1.jpg";
+		CImg<unsigned char> texture;
+		LoadTexture(texture_path, texture);
 	#endif
 
 	vector<Triangle> triangles;
@@ -399,11 +399,9 @@ vec3 pixelFromTexture(vec2 pos, int height, int width) {
 }
 
 #ifdef TEXTURES_CIMG
-void LoadTexture(const char* texture_file) {
-	CImg<unsigned char> image(texture_file);
-	int width = image.width();
-	int height = image.height();
-
+void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image) {
+	image = CImg<unsigned char>(texture_file);
+	//TODO: Should add some error handling :) 
 }
 #endif
 
