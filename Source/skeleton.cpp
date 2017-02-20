@@ -347,3 +347,27 @@ vec3 reflect(const vec3& I, const vec3& N){
 	float c1 = -dot( I, N );
 	return I + (2.0f * N * c1 );
 }
+
+vec3 barycentricCoordinates(Triangle t) {
+
+	vec3 a = t.v0;
+	vec3 b = t.v1;
+	vec3 c = t.v2;
+
+	//Just for consistency
+	vec3 auv = t.uv0;
+	vec3 buv = t.uv1;
+	vec3 cuv = t.uv2;
+
+	float barya = (b.x-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
+		  barya /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
+	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
+		  baryb /= (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
+	float baryc = 1 - barya - baryb;
+
+	return barya*auv + baryb*buv + baryc*cuv;
+
+}
+
+
+
