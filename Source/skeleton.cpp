@@ -5,6 +5,7 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include "ObjLoader.h"
+#include "CImg/CImg.h"
 
 using namespace std;
 using glm::vec3;
