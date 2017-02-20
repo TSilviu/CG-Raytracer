@@ -370,10 +370,12 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 }
 
-vec3 pixelFromTexture(vec2 ) {
-
+vec3 pixelFromTexture(vec2 pos, int height, int width) {
+	int img_x = (int) (pos.x*width);
+	int img_y = (int) (pos.x*height);
 	return vec3(0.f,0.f,0.f);
 }
+
 
 
 
