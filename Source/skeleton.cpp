@@ -38,6 +38,7 @@ using glm::mat3;
 #define DOFSamples 0
 #define Aperture 1.0f
 #define SoftShadowsSamples 1
+#define ReflexionDepth 1
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -208,7 +209,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	#pragma omp parallel for //firstprivate(color)
+	//#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -335,7 +336,6 @@ void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Inte
 	}
 }
 
-#define ReflexionDepth 5
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color, int depth) {
 	if(triangles[inter.triangleIndex].reflective == 1 && depth < ReflexionDepth) {
     	vec3 r = normalize(dir);
@@ -362,7 +362,9 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
 			//barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
-			vec3 texture_color = pixelFromTexture(barycentricCoordinates(triangles[inter.triangleIndex], inter.position), texture);
+			vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
+			vec3 texture_color = pixelFromTexture(bary_coords, texture);
+
 		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);
 
@@ -387,26 +389,29 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 	vec2 auv = t.uv0;
 	vec2 buv = t.uv1;
 	vec2 cuv = t.uv2;
-	float denom = (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
-	if(denom!=0) {
-		float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
-			  barya /= denom;
-		float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
-			  baryb /= denom;
-		float baryc = 1 - barya - baryb;
-		return barya*auv + baryb*buv + baryc*cuv;
-	} 
-	// cout<<"NewIter\n";
-	// cout<<a.x<< " " <<b.x<<" "<<c.x<<"\n";
-	// cout<<a.y<< " " <<b.y<<" "<<c.y<<"\n";
-	// cout<<a.z<< " " <<b.z<<" "<<c.z<<"\n";
-	// cout<<p.x<< " " <<p.y<<" "<<p.z<<"\n";
-	
-	// cout<<(b.y-c.y)<< " "<<(a.x-c.x)<<"\n";
-	// cout<<(c.x-b.x)<< " "<<(a.y-c.y)<<"\n";
-	
-	// cout<<barya<<" "<<baryb<<"\n";
-	return vec2(0.f,0.f);
+
+	float areaABC = dot( t.normal, cross( (b - a), (c - a) )  ) ;
+	float areaPBC = dot( t.normal, cross( (b - p), (c - p) )  ) ;
+	float areaPCA = dot( t.normal, cross( (c - p), (a - p) )  ) ;
+
+	vec3 bary;
+
+	bary.x = areaPBC / areaABC ; // alpha
+	bary.y = areaPCA / areaABC ; // beta
+	bary.z = 1.0f - bary.x - bary.y ; // gamma
+
+	return bary.x*auv + bary.y*buv + bary.z*cuv;
+  	//return bary ;
+	// float denom = (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
+	// if(denom!=0) {
+	// 	float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
+	// 		  barya /= denom;
+	// 	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
+	// 		  baryb /= denom;
+	// 	float baryc = 1 - barya - baryb;
+	// 	return barya*auv + baryb*buv + baryc*cuv;
+	// } 
+	// return vec2(0.f,0.f);
 
 }
 
