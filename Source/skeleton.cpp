@@ -20,9 +20,15 @@ using glm::mat3;
 	#define cimg_use_jpeg
 	#include "CImg/CImg.h"
 	using namespace cimg_library;
+	CImg<unsigned char> image;
+	struct Texture {
+		int height, width;
+		vec3* pixels;
+	};
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
-	vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture);
-	CImg<unsigned char> texture;
+	vec3 pixelFromTexture(vec2 pos, Texture& texture);
+	void ConvertCImg(CImg<unsigned char>& image, Texture& texture);
+	Texture texture;
 #endif
 
 //#define TEXTURES_SDL
@@ -97,7 +103,8 @@ int main( int argc, char* argv[] )
 {
 	#ifdef TEXTURES_CIMG
 		const char* texture_path = "Textures/text1.jpg";
-		LoadTexture(texture_path, texture);
+		LoadTexture(texture_path, image);
+		ConvertCImg(image, texture);
 	#endif
 
 	vector<Triangle> triangles;
@@ -416,19 +423,33 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 }
 
 #ifdef TEXTURES_CIMG
-vec3 pixelFromTexture(vec2 pos, CImg<unsigned char> texture) {
-	int img_x = (int) (pos.x*texture.width());
-	int img_y = (int) (pos.y*texture.height());
-	float r = (float) texture(img_x, img_y, 0, 0)/255.f;
-	float g = (float) texture(img_x, img_y, 0, 1)/255.f;
-	float b = (float) texture(img_x, img_y, 0, 2)/255.f;
-	return vec3(r, g, b);
+vec3 pixelFromTexture(vec2 pos, Texture& texture) {
+	int img_x = (int) (pos.x*texture.width);
+	int img_y = (int) (pos.y*texture.height);
+	// float r = (float) texture(img_x, img_y, 0, 0)/255.f;
+	// float g = (float) texture(img_x, img_y, 0, 1)/255.f;
+	// float b = (float) texture(img_x, img_y, 0, 2)/255.f;
+	return texture.pixels[img_x*img_y];//vec3(r, g, b);
 }
 
 
 void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image) {
 	image = CImg<unsigned char>(texture_file);
 	//TODO: Should add some error handling :) 
+}
+
+void ConvertCImg(CImg<unsigned char>& image, Texture& texture) {
+	texture.width = image.width();
+	texture.height = image.height();
+	texture.pixels = new vec3[texture.height*texture.width];
+	for(int i=0; i<texture.height; i++)
+		for(int j=0; j<texture.width; j++) {
+			float r = (float) image(i, j, 0, 0)/255.f;
+			float g = (float) image(i, j, 0, 1)/255.f;
+			float b = (float) image(i, j, 0, 2)/255.f;
+			texture.pixels[i*j] = vec3(r, g, b);
+		}
+	//delete &image;
 }
 #endif
 
