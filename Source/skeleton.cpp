@@ -429,7 +429,7 @@ vec3 pixelFromTexture(vec2 pos, Texture& texture) {
 	// float r = (float) texture(img_x, img_y, 0, 0)/255.f;
 	// float g = (float) texture(img_x, img_y, 0, 1)/255.f;
 	// float b = (float) texture(img_x, img_y, 0, 2)/255.f;
-	return texture.pixels[img_x*texture.width + img_y];//vec3(r, g, b);
+	return texture.pixels[img_y*texture.width + img_x];//vec3(r, g, b);
 }
 
 
