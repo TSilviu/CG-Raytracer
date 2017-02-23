@@ -444,10 +444,10 @@ void ConvertCImg(CImg<unsigned char>& image, Texture& texture) {
 	texture.pixels = new vec3[texture.height*texture.width];
 	for(int i=0; i<texture.height; i++)
 		for(int j=0; j<texture.width; j++) {
-			float r = (float) image(i, j, 0, 0)/255.f;
-			float g = (float) image(i, j, 0, 1)/255.f;
-			float b = (float) image(i, j, 0, 2)/255.f;
-			texture.pixels[i*texture.width + j] = vec3(r, g, b);
+			float r = (float) image(j, i, 0, 0)/255.f;
+			float g = (float) image(j, i, 0, 1)/255.f;
+			float b = (float) image(j, i, 0, 2)/255.f;
+			texture.pixels[(texture.height-i-1) * texture.width + j] = vec3(r, g, b);
 		}
 	//delete &image;
 }
