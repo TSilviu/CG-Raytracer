@@ -14,7 +14,7 @@ using glm::vec2;
 using glm::mat3;
 
 #define CORNELL_BOX
-//#define TEXTURES_CIMG
+#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
@@ -28,7 +28,7 @@ using glm::mat3;
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
 	vec3 pixelFromTexture(vec2 pos, Texture& texture);
 	void ConvertCImg(CImg<unsigned char>& image, Texture& texture);
-	Texture texture;
+	Texture texture, nMap;
 #endif
 
 //#define TEXTURES_SDL
@@ -105,8 +105,11 @@ int main( int argc, char* argv[] )
 {
 	#ifdef TEXTURES_CIMG
 		const char* texture_path = "Textures/text1.jpg";
+		const char* nMap_path = "Textures/text1n.jpg";
 		LoadTexture(texture_path, image);
 		ConvertCImg(image, texture);
+		LoadTexture(nMap_path, image);
+		ConvertCImg(image, nMap);
 	#endif
 
 	vector<Triangle> triangles;
@@ -293,7 +296,9 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
+	vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
+	vec3 texture_color = pixelFromTexture(bary_coords, nMap);
+	vec3 n = triangles[i.triangleIndex].normal + texture_color;		//The triangle's normal
 	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
