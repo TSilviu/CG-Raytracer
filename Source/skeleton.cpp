@@ -14,7 +14,7 @@ using glm::vec2;
 using glm::mat3;
 
 #define CORNELL_BOX
-#define TEXTURES_CIMG
+//#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
@@ -374,10 +374,12 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
-			//barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
-			vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
-			vec3 texture_color = pixelFromTexture(bary_coords, texture);
-
+			#ifdef TEXTURES_CIMG 
+				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
+				vec3 texture_color = pixelFromTexture(bary_coords, texture);
+			#else
+				vec3 texture_color = triangles[inter.triangleIndex].color;
+			#endif
 		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);
 
