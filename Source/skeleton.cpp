@@ -45,6 +45,8 @@ using glm::mat3;
 #define Aperture 1.0f
 #define SoftShadowsSamples 1
 #define ReflexionDepth 1
+
+#define kEpsilon 0.0001
 /* ----------------------------------------------------------------------------*/
 /* GLOBAL VARIABLES                                                            */
 
@@ -265,16 +267,23 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 		const vec3 v2 = triangles[i].v2;
 		const vec3 e1 = v1 - v0;				//Edge1
 		const vec3 e2 = v2 - v0;				//Edge2
-		const vec3 b = start - v0;
-		const mat3 A( -dir, e1, e2 );
-		const vec3 x = glm::inverse( A ) * b; //Intersection point
+		const vec3 tvec = start - v0;
+		// const mat3 A( -dir, e1, e2 );
+		// const vec3 x = glm::inverse( A ) * b; //Intersection point
+		vec3 pvec = cross(dir, e2);
+		float det = dot(e1, pvec);
 
-		const float t = x.x;
-		const float u = x.y;
-		const float v = x.z;
+		if (abs(det) < kEpsilon) continue;
+		float invDet = 1 / det; 
 
+		const float u = dot(tvec, pvec) * invDet; 
+		if (u < 0 || u > 1) continue; 
+		vec3 qvec = cross(tvec, e1);
+		const float v = dot(dir, qvec) * invDet;
+		if (v < 0 || u + v > 1) continue;
+		const float t = dot(e2, qvec) * invDet;
 
-		if(t>=0 && closestIntersection.distance > t && u>=0 && v>=0 && (u+v)<=1) {
+		if(t>=0 && closestIntersection.distance > t) {
 			closestIntersection.position = v0 + u*e1 + v*e2;
 			closestIntersection.distance = t;
 			closestIntersection.triangleIndex = i;
@@ -285,6 +294,28 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 	}
 	return true;
 }
+
+// bool ClosestIntersectionOptimised( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) { 
+//     vec3 v0v1 = triangles.v1 - triangles.v0; 
+//     vec3 v0v2 = triangles.v2 - triangles.v0; 
+//     vec3 pvec = cross(dir, v0v2);
+//     float det = dot(v0v1, pvec); 
+//     if (abs(det) < kEpsilon) return false;
+
+//     float invDet = 1 / det; 
+ 
+//     vec3 tvec = start - triangles.v0; 
+//     vec3 u = dot(tvec, pvec) * invDet; 
+//     if (u < 0 || u > 1) return false; 
+ 
+//     vec3 qvec = cross(tvec, v0v1); 
+//     vec3 v = dot(dir, qvec) * invDet; 
+//     if (v < 0 || u + v > 1) return false; 
+ 
+//     t = dot(v0v2, qvec) * invDet; 
+ 
+//     return true; 
+// }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	vec3 n = triangles[i.triangleIndex].normal;		//The triangle's normal
