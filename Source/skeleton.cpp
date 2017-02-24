@@ -266,8 +266,7 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 		const vec3 e1 = triangles[i].e1;				//Edge1
 		const vec3 e2 = triangles[i].e2;				//Edge2
 		const vec3 tvec = start - v0;
-		// const mat3 A( -dir, e1, e2 );
-		// const vec3 x = glm::inverse( A ) * b; //Intersection point
+
 		const vec3 pvec = cross(dir, e2);
 		const float det = dot(e1, pvec);
 
@@ -415,27 +414,12 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 	bary.z = 1.0f - bary.x - bary.y ; // gamma
 
 	return bary.x*auv + bary.y*buv + bary.z*cuv;
-  	//return bary ;
-	// float denom = (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
-	// if(denom!=0) {
-	// 	float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
-	// 		  barya /= denom;
-	// 	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
-	// 		  baryb /= denom;
-	// 	float baryc = 1 - barya - baryb;
-	// 	return barya*auv + baryb*buv + baryc*cuv;
-	// } 
-	// return vec2(0.f,0.f);
-
 }
 
 #ifdef TEXTURES_CIMG
 vec3 pixelFromTexture(vec2 pos, Texture& texture) {
 	int img_x = (int) (pos.x*texture.width);
 	int img_y = (int) (pos.y*texture.height);
-	// float r = (float) texture(img_x, img_y, 0, 0)/255.f;
-	// float g = (float) texture(img_x, img_y, 0, 1)/255.f;
-	// float b = (float) texture(img_x, img_y, 0, 2)/255.f;
 	return texture.pixels[img_y*texture.width + img_x];//vec3(r, g, b);
 }
 
