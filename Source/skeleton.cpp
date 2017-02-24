@@ -93,7 +93,7 @@ struct Intersection
 void Update();
 void Draw(const vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
-bool ClosestIntersection(vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
+bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
@@ -218,7 +218,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	//#pragma omp parallel for //firstprivate(color)
+	#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -258,7 +258,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	}
 }
 
-bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
+bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 	closestIntersection.distance = std::numeric_limits<float>::max();
 	closestIntersection.triangleIndex = -1;
 	for (uint i = 0; i < triangles.size(); ++i) {
@@ -300,8 +300,8 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
 		float rand_x, rand_z;
 		if(SoftShadowsSamples != 1) {//Use the center of the light if soft shadows are not used
-			rand_x = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
-	    	rand_z = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2;
+			rand_x = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2.f;
+	    	rand_z = ((((float)(rand() % RAND_MAX) / RAND_MAX) * 2.0f - 1.0f)) * lightL/2.f;
 	    } else rand_x = rand_z = 0.0f;
 
     	vec3 ray_destination(lightPos.x + rand_x, lightPos.y, lightPos.z + rand_z);
