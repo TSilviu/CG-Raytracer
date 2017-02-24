@@ -93,7 +93,7 @@ struct Intersection
 void Update();
 void Draw(const vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
-bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
+bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection, float& u, float& v );
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
@@ -258,7 +258,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	}
 }
 
-bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
+bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection, float& u, float& v) {
 	closestIntersection.distance = std::numeric_limits<float>::max();
 	closestIntersection.triangleIndex = -1;
 	for (uint i = 0; i < triangles.size(); ++i) {
