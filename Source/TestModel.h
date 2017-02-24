@@ -13,9 +13,14 @@ public:
 	glm::vec3 v0;
 	glm::vec3 v1;
 	glm::vec3 v2;
+
+	glm::vec3 e1;
+	glm::vec3 e2;
+
 	glm::vec3 normal;
 	glm::vec3 color;
 	int reflective;	//reflective property of triangle; can be either 0 or 1
+	
 	glm::vec2 uv0;
 	glm::vec2 uv1;
 	glm::vec2 uv2;
@@ -35,8 +40,8 @@ public:
 	
 	void ComputeNormal()
 	{
-		glm::vec3 e1 = v1-v0;
-		glm::vec3 e2 = v2-v0;
+		this->e1 = v1-v0;
+		this->e2 = v2-v0;
 		normal = glm::normalize( glm::cross( e2, e1 ) );
 	}
 };

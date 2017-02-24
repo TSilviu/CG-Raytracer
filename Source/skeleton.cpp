@@ -263,10 +263,8 @@ bool ClosestIntersection( vec3 start, vec3 dir, const vector<Triangle>& triangle
 	closestIntersection.triangleIndex = -1;
 	for (uint i = 0; i < triangles.size(); ++i) {
 		const vec3 v0 = triangles[i].v0;
-		const vec3 v1 = triangles[i].v1;
-		const vec3 v2 = triangles[i].v2;
-		const vec3 e1 = v1 - v0;				//Edge1
-		const vec3 e2 = v2 - v0;				//Edge2
+		const vec3 e1 = triangles[i].e1;				//Edge1
+		const vec3 e2 = triangles[i].e2;				//Edge2
 		const vec3 tvec = start - v0;
 		// const mat3 A( -dir, e1, e2 );
 		// const vec3 x = glm::inverse( A ) * b; //Intersection point
