@@ -26,7 +26,7 @@ using glm::mat3;
 		vec3* pixels;
 	};
 	void LoadTexture(const char* texture_file, 	CImg<unsigned char>& image);
-	vec3 pixelFromTexture(float u, float v, Texture& texture);
+	vec3 pixelFromTexture(vec2 pos, Texture& texture);
 	void ConvertCImg(CImg<unsigned char>& image, Texture& texture);
 	Texture texture;
 #endif
@@ -83,9 +83,8 @@ float jitterMatrix[4 * 2] = {
 /* STRUCTURES 								*/
 struct Intersection
 {
-    float distance;
-    float u, v;
     vec3 position;
+    float distance;
     int triangleIndex;
 };
 
@@ -94,7 +93,7 @@ struct Intersection
 void Update();
 void Draw(const vector<Triangle>& triangles);
 void Interpolate( float a, float b, vector<float>& result );
-bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection);
+bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection );
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles );
 void ApplyDOF(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
 void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triangles, Intersection& inter);
@@ -267,7 +266,8 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 		const vec3 e1 = triangles[i].e1;				//Edge1
 		const vec3 e2 = triangles[i].e2;				//Edge2
 		const vec3 tvec = start - v0;
-
+		// const mat3 A( -dir, e1, e2 );
+		// const vec3 x = glm::inverse( A ) * b; //Intersection point
 		const vec3 pvec = cross(dir, e2);
 		const float det = dot(e1, pvec);
 
@@ -285,19 +285,10 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 			closestIntersection.position = v0 + u*e1 + v*e2;
 			closestIntersection.distance = t;
 			closestIntersection.triangleIndex = i;
-			closestIntersection.u = u;
-			closestIntersection.v = v;
 		}
 	}
 	if(closestIntersection.triangleIndex == -1) {
 		return false;
-	} else {
-		//Compute the texture UV coordinates:
-		const vec2 uv0 = triangles[closestIntersection.triangleIndex].uv0;
-		const vec2 uv1 = triangles[closestIntersection.triangleIndex].uv1;
-		const vec2 uv2 = triangles[closestIntersection.triangleIndex].uv2;
-		closestIntersection.u = closestIntersection.u*uv0.x + closestIntersection.v*uv1.x + (1.0f - closestIntersection.u - closestIntersection.v)*(uv2.x);
-		closestIntersection.v = closestIntersection.u*uv0.y + closestIntersection.v*uv1.y + (1.0f - closestIntersection.u - closestIntersection.v)*(uv2.y);
 	}
 	return true;
 }
@@ -365,7 +356,6 @@ vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersec
 		Intersection objToIntersection;
 		vec3 R = reflect(r, triangles[inter.triangleIndex].normal);
 		vec3 r_r = normalize(R);
-
 		if (ClosestIntersection(inter.position+r_r*0.0001f, r_r, triangles, objToIntersection)) {
 			return ApplyReflexions(triangles, r_r, objToIntersection, color, ++depth)*triangles[objToIntersection.triangleIndex].color;
 		} 
@@ -385,8 +375,9 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
-
-			vec3 texture_color = pixelFromTexture(inter.u, inter.v, texture);
+			//barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
+			vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
+			vec3 texture_color = pixelFromTexture(bary_coords, texture);
 
 		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);
@@ -402,7 +393,6 @@ vec3 reflect(const vec3& I, const vec3& N){
 	return I + (2.0f * N * c1 );
 }
 
-//USED FOR TEXTURE MAPPING (OLD)
 vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 	vec3 a = t.v0;
@@ -425,12 +415,24 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 	bary.z = 1.0f - bary.x - bary.y ; // gamma
 
 	return bary.x*auv + bary.y*buv + bary.z*cuv;
+  	//return bary ;
+	// float denom = (b.y-c.y)*(a.x-c.x) + (c.x-b.x)*(a.y-c.y);
+	// if(denom!=0) {
+	// 	float barya = (b.y-c.y)*(p.x-c.x) + (c.x-b.x)*(p.y-c.y);
+	// 		  barya /= denom;
+	// 	float baryb = (c.y-a.y)*(p.x-c.x) + (a.x-c.x)*(p.y-c.y);
+	// 		  baryb /= denom;
+	// 	float baryc = 1 - barya - baryb;
+	// 	return barya*auv + baryb*buv + baryc*cuv;
+	// } 
+	// return vec2(0.f,0.f);
+
 }
 
 #ifdef TEXTURES_CIMG
-vec3 pixelFromTexture(float u, float v, Texture& texture) {
-	int img_x = (int) (u*texture.width);
-	int img_y = (int) (v*texture.height);
+vec3 pixelFromTexture(vec2 pos, Texture& texture) {
+	int img_x = (int) (pos.x*texture.width);
+	int img_y = (int) (pos.y*texture.height);
 	// float r = (float) texture(img_x, img_y, 0, 0)/255.f;
 	// float g = (float) texture(img_x, img_y, 0, 1)/255.f;
 	// float b = (float) texture(img_x, img_y, 0, 2)/255.f;
