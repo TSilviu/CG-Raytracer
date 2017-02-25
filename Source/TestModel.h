@@ -29,7 +29,7 @@ public:
 		: v0(v0), v1(v1), v2(v2), color(color), reflective(reflective)
 	{
 		ComputeNormal();
-		SetUV(glm::vec2(0.0f, 0.1f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f));
+		SetUV(glm::vec2(0.0f, 0.1f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f));
 	}
 
 	void SetUV(glm::vec2 uv0, glm::vec2 uv1, glm::vec2 uv2) {
@@ -81,25 +81,25 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	vec3 G(L,L,L);
 	vec3 H(0,L,L);
 
-	// // Floor:
-	// triangles.push_back( Triangle( C, B, A, green, 0 ) );
-	// triangles.push_back( Triangle( C, D, B, green, 0 ) );
+	// Floor:
+	triangles.push_back( Triangle( C, B, A, green, 0 ) );
+	triangles.push_back( Triangle( C, D, B, green, 0 ) );
 
-	// // Left wall
-	// triangles.push_back( Triangle( A, E, C, pure_white, 1 ) );
-	// triangles.push_back( Triangle( C, E, G, pure_white, 1 ) );
+	// Left wall
+	triangles.push_back( Triangle( A, E, C, pure_white, 1 ) );
+	triangles.push_back( Triangle( C, E, G, pure_white, 1 ) );
 
-	// // Right wall
-	// triangles.push_back( Triangle( F, B, D, yellow, 0 ) );
-	// triangles.push_back( Triangle( H, F, D, yellow, 0 ) );
+	// Right wall
+	triangles.push_back( Triangle( F, B, D, yellow, 0 ) );
+	triangles.push_back( Triangle( H, F, D, yellow, 0 ) );
 
-	// // Ceiling
-	// triangles.push_back( Triangle( E, F, G, cyan, 0 ) );
-	// triangles.push_back( Triangle( F, H, G, cyan, 0 ) );
+	// Ceiling
+	triangles.push_back( Triangle( E, F, G, cyan, 0 ) );
+	triangles.push_back( Triangle( F, H, G, cyan, 0 ) );
 
 	// // Back wall
 	triangles.push_back( Triangle( G, D, C, white, 0 ) );
-	//triangles.push_back( Triangle( G, H, D, white, 0 ) );
+	triangles.push_back( Triangle( G, H, D, white, 0 ) );
 
 	// ---------------------------------------------------------------------------
 	// Short block
@@ -114,25 +114,25 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	G = vec3(240,165,272);
 	H = vec3( 82,165,225);
 
-	// // Front
-	// triangles.push_back( Triangle(E,B,A,red, 1) );
-	// triangles.push_back( Triangle(E,F,B,red, 1) );
+	// Front
+	triangles.push_back( Triangle(E,B,A,red, 1) );
+	triangles.push_back( Triangle(E,F,B,red, 1) );
 
-	// // Front
-	// triangles.push_back( Triangle(F,D,B,red, 1) );
-	// triangles.push_back( Triangle(F,H,D,red, 1) );
+	// Front
+	triangles.push_back( Triangle(F,D,B,red, 1) );
+	triangles.push_back( Triangle(F,H,D,red, 1) );
 
-	// // BACK
-	// triangles.push_back( Triangle(H,C,D,red, 1) );
-	// triangles.push_back( Triangle(H,G,C,red, 1) );
+	// BACK
+	triangles.push_back( Triangle(H,C,D,red, 1) );
+	triangles.push_back( Triangle(H,G,C,red, 1) );
 
-	// // LEFT
-	// triangles.push_back( Triangle(G,E,C,red, 1) );
-	// triangles.push_back( Triangle(E,A,C,red, 1) );
+	// LEFT
+	triangles.push_back( Triangle(G,E,C,red, 1) );
+	triangles.push_back( Triangle(E,A,C,red, 1) );
 
-	// // TOP
-	// triangles.push_back( Triangle(G,F,E,red, 1) );
-	// triangles.push_back( Triangle(G,H,F,red, 1) );
+	// TOP
+	triangles.push_back( Triangle(G,F,E,red, 1) );
+	triangles.push_back( Triangle(G,H,F,red, 1) );
 
 	// ---------------------------------------------------------------------------
 	// Tall block

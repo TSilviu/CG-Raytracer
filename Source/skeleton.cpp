@@ -223,7 +223,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	//#pragma omp parallel for //firstprivate(color)
+	#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -282,7 +282,7 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 		if (u < 0.0f || u > 1.0f) continue; 
 		const vec3 qvec = cross(tvec, e1);
 		const float v = dot(dir, qvec) * invDet;
-		if (v < 0.0f || u + v > 1.0f) continue;
+		if (v < 0.0f || u + v > 1.0f ) continue;
 		const float t = dot(e2, qvec) * invDet;
 
 		if(t>=0.0f && closestIntersection.distance > t) {
@@ -296,17 +296,25 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 	if(closestIntersection.triangleIndex == -1) {
 		return false;
 	} 
+	else {
+		const vec2 uv0 = triangles[closestIntersection.triangleIndex].uv0;
+		const vec2 uv1 = triangles[closestIntersection.triangleIndex].uv1;
+		const vec2 uv2 = triangles[closestIntersection.triangleIndex].uv2;
+		const float w = 1.f - closestIntersection.u - closestIntersection.v;
+		closestIntersection.u = w*uv0.x + closestIntersection.u*uv1.x + closestIntersection.v*uv2.x;
+		closestIntersection.v = w*uv0.y + closestIntersection.u*uv1.y + closestIntersection.v*uv2.y;
+	}
 	return true;
 }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	// #ifdef TEXTURES_CIMG
+	#ifdef TEXTURES_CIMG
 		//vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
-		// vec3 file_normal = pixelFromTexture(vec2(i.u,i.v), nMap)*2.0f - 1.0f;
-		// vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal);		//The triangle's normal
-	// #else
+		vec3 file_normal = pixelFromTexture(vec2(i.u,i.v), nMap)*2.0f - 1.0f;
+		vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal*2.0f);		//The triangle's normal
+	#else
 		vec3 n = triangles[i.triangleIndex].normal;
-	// #endif
+	#endif
 	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
@@ -388,16 +396,8 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 
-
-				const vec2 uv0 = triangles[inter.triangleIndex].uv0;
-				const vec2 uv1 = triangles[inter.triangleIndex].uv1;
-				const vec2 uv2 = triangles[inter.triangleIndex].uv2;
-				const float m_U = inter.u;
-				const float m_V = inter.v;
-				float uf = uv0.x + m_U*(uv1.x - uv0.x) * m_V*(uv2.x - uv0.x); 
-				float vf = uv0.y + m_U*(uv1.y - uv0.y) * m_V*(uv2.y - uv0.y);
-				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position); //vec2(inter.u, inter.v)
-				vec3 texture_color = pixelFromTexture(bary_coords, texture);
+				//vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position); //vec2(inter.u, inter.v)
+				vec3 texture_color = pixelFromTexture(vec2(inter.u, inter.v), texture);
 			#else
 				vec3 texture_color = triangles[inter.triangleIndex].color;
 			#endif
