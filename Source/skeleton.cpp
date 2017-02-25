@@ -100,6 +100,7 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 vec3 ApplyReflexions(const vector<Triangle>& triangles, const vec3 dir, Intersection inter, vec3 color);
 vec3 reflect(const vec3& I, const vec3& N);
 vec2 barycentricCoordinates(Triangle t, vec3 p);
+mat3 perturbedNormal(Triangle t);
 
 int main( int argc, char* argv[] )
 {
@@ -296,9 +297,13 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
-	vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
-	vec3 texture_color = pixelFromTexture(bary_coords, nMap);
-	vec3 n = triangles[i.triangleIndex].normal + texture_color;		//The triangle's normal
+	#ifdef TEXTURES_CIMG
+		vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
+		vec3 file_normal = pixelFromTexture(bary_coords, nMap)*2.0f - 1.0f;
+		vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal);		//The triangle's normal
+	#else
+		vec3 n = triangles[i.triangleIndex].normal;
+	#endif
 	vec3 average = vec3(0.f,0.f,0.f);
 	Intersection objToLight;
 	for(int sample = 0; sample < SoftShadowsSamples; ++sample) {
@@ -397,6 +402,33 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 vec3 reflect(const vec3& I, const vec3& N){
 	float c1 = -dot( I, N );
 	return I + (2.0f * N * c1 );
+}
+
+mat3 perturbedNormal(Triangle t) {
+
+        // Shortcuts for vertices
+        vec3 v0 = t.v0;
+        vec3 v1 = t.v1;
+        vec3 v2 = t.v2;
+
+        // Shortcuts for UVs
+        vec2 uv0 = t.uv0;
+        vec2 uv1 = t.uv1;
+        vec2 uv2 = t.uv2;
+
+        // Edges of the triangle : postion delta
+        vec3 deltaPos1 = v1-v0;
+        vec3 deltaPos2 = v2-v0;
+
+        // UV delta
+        vec2 deltaUV1 = uv1-uv0;
+        vec2 deltaUV2 = uv2-uv0;
+
+        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+        vec3 tangent = (deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r;
+        vec3 bitangent = (deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r;
+        vec3 normal = t.normal;
+        return mat3(tangent, bitangent, normal);
 }
 
 vec2 barycentricCoordinates(Triangle t, vec3 p) {
