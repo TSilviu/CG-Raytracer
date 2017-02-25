@@ -301,7 +301,7 @@ bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	#ifdef TEXTURES_CIMG
-		vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
+		//vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
 		vec3 file_normal = pixelFromTexture(vec2(i.u,i.v), nMap)*2.0f - 1.0f;
 		vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal);		//The triangle's normal
 	#else
@@ -388,8 +388,8 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 
-				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
-				vec3 texture_color = pixelFromTexture(bary_coords, texture);
+				//vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
+				vec3 texture_color = pixelFromTexture(vec2(inter.u, inter.v), texture);
 			#else
 				vec3 texture_color = triangles[inter.triangleIndex].color;
 			#endif
