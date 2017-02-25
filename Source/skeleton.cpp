@@ -311,7 +311,7 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	#ifdef TEXTURES_CIMG
 		//vec2 bary_coords = barycentricCoordinates(triangles[i.triangleIndex], i.position);
 		vec3 file_normal = pixelFromTexture(vec2(i.u,i.v), nMap)*2.0f - 1.0f;
-		vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal*2.0f);		//The triangle's normal
+		vec3 n = normalize(perturbedNormal(triangles[i.triangleIndex]) * file_normal);		//The triangle's normal
 	#else
 		vec3 n = triangles[i.triangleIndex].normal;
 	#endif
@@ -488,7 +488,7 @@ void ConvertCImg(CImg<unsigned char>& image, Texture& texture) {
 			float r = (float) image(j, i, 0, 0)/255.f;
 			float g = (float) image(j, i, 0, 1)/255.f;
 			float b = (float) image(j, i, 0, 2)/255.f;
-			texture.pixels[i * texture.width + j] = vec3(r, g, b);
+			texture.pixels[(texture.height - i - 1) * texture.width + j] = vec3(r, g, b);
 		}
 	//delete &image;
 }
