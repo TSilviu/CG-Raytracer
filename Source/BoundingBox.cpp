@@ -32,20 +32,20 @@ int BoundingBox::LongestAxis() {
 	return -1;
 }
 
-BoundingBox::BoundingBox(std::vector<Triangle*> triangles) {
+BoundingBox::BoundingBox(std::vector<Triangle> triangles) {
 	glm::vec3 min(1000.f, 1000.f, 1000.f);
 	glm::vec3 max(-1000.f, -1000.f, -1000.f);
 
 	//Creates the bounding box by finding the min and max 
 	//Coordinates on x,y,z of the triangles
 	for(int i=0; i>triangles.size(); i++) {
-		min = CompareVertex(triangles[i]->v0, min, 1);
-		min = CompareVertex(triangles[i]->v1, min, 1);
-		min = CompareVertex(triangles[i]->v2, min, 1);
+		min = CompareVertex(triangles[i].v0, min, 1);
+		min = CompareVertex(triangles[i].v1, min, 1);
+		min = CompareVertex(triangles[i].v2, min, 1);
 
-		max = CompareVertex(triangles[i]->v0, max, 0);
-		max = CompareVertex(triangles[i]->v1, max, 0);
-		max = CompareVertex(triangles[i]->v2, max, 0);
+		max = CompareVertex(triangles[i].v0, max, 0);
+		max = CompareVertex(triangles[i].v1, max, 0);
+		max = CompareVertex(triangles[i].v2, max, 0);
 	}
 
 	this->min = min;

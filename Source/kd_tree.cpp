@@ -1,15 +1,15 @@
 #include "kd_tree.h"
 
-glm::vec3 Midpoint(Triangle* t) {
+glm::vec3 Midpoint(Triangle t) {
 	glm::vec3 midpoint;
-	midpoint.x = (t->v0.x + t->v1.x + t->v2.x)/3.0f;
-	midpoint.y = (t->v0.y + t->v1.y + t->v2.y)/3.0f;
-	midpoint.z = (t->v0.z + t->v1.z + t->v2.z)/3.0f;
-	
-	return glm::vec3(0.f, 0.f, 0.f);
+	midpoint.x = (t.v0.x + t.v1.x + t.v2.x)/3.0f;
+	midpoint.y = (t.v0.y + t.v1.y + t.v2.y)/3.0f;
+	midpoint.z = (t.v0.z + t.v1.z + t.v2.z)/3.0f;
+
+	return midpoint;
 }
 
-KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
+KDNode* KDNode::build (vector<Triangle> triangles, int depth) const {
 	KDNode* node = new KDNode();
 	node->triangles = triangles;
 	node->left = NULL;
@@ -23,8 +23,8 @@ KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
 		node -> left = new KDNode();
 		node -> right = new KDNode();
 		//Nodes will be empty and will trigger the first basecase
-		node -> left -> triangles = vector<Triangle*>();
-		node -> right -> triangles = vector<Triangle*>();
+		node -> left -> triangles = vector<Triangle>();
+		node -> right -> triangles = vector<Triangle>();
 		return node;
 	}
 
@@ -36,8 +36,8 @@ KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
 	midpoint /= triangles.size();
 
 	//Partition tiriangles:
-	std::vector<Triangle*> left_triangles;
-	std::vector<Triangle*> right_triangles;
+	std::vector<Triangle> left_triangles;
+	std::vector<Triangle> right_triangles;
 
 	int axis = node -> bbox.LongestAxis();
 	for(int i=0; i<triangles.size(); i++) {
@@ -66,7 +66,7 @@ KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
 	int matches = 0;
 	for(int i=0; i<right_triangles.size(); i++)
 		for(int j=0; j<left_triangles.size(); j++) {
-			if(right_triangles[i] == left_triangles[j]) matches++;
+			if(&right_triangles[i] == &left_triangles[j]) matches++;
 		}
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
 		node -> left = build(left_triangles, depth+1);
@@ -74,8 +74,8 @@ KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
 	} else {
 		node -> left = new KDNode();
 		node -> right = new KDNode();
-		node -> left -> triangles = std::vector<Triangle*> ();
-		node -> right -> triangles = std::vector<Triangle*> ();
+		node -> left -> triangles = std::vector<Triangle> ();
+		node -> right -> triangles = std::vector<Triangle> ();
 	}
 	return node;
 }

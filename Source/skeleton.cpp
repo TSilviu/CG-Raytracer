@@ -7,6 +7,7 @@
 #include "TestModel.h"
 #include "ObjLoader.h"
 #include "kd_tree.h"
+#include "BoundingBox.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ using glm::vec2;
 using glm::mat3;
 
 #define CORNELL_BOX
-#define TEXTURES_CIMG
+//#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
@@ -124,6 +125,9 @@ int main( int argc, char* argv[] )
 			printf("Model Loaded succesfuly\n");
 		} else return 0;
 	#endif
+
+	KDNode* root = new KDNode();
+	root->build(triangles, 0);
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
