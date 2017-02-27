@@ -8,6 +8,8 @@
 #include "ObjLoader.h"
 #include "kd_tree.h"
 #include "BoundingBox.h"
+#include "BoundingBox.cpp"
+#include "kd_tree.cpp"
 
 using namespace std;
 

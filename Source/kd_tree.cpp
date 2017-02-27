@@ -9,7 +9,8 @@ glm::vec3 Midpoint(Triangle t) {
 	return midpoint;
 }
 
-KDNode* KDNode::build (vector<Triangle> triangles, int depth) const {
+KDNode::KDNode() {};
+KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	KDNode* node = new KDNode();
 	node->triangles = triangles;
 	node->left = NULL;
