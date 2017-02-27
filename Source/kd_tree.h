@@ -14,7 +14,7 @@ public:
 	KDNode* right;
 	vector<Triangle*> triangles;
 	KDNode();
-	KDNode* build (vector<Triangle*> triangle) const;
+	KDNode* build (vector<Triangle*> triangle, int depth) const;
 };
 
 #endif

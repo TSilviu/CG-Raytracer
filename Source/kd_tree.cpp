@@ -5,7 +5,7 @@ glm::vec3 Midpoint(Triangle* t) {
 	return glm::vec3(0.f, 0.f, 0.f);
 }
 
-KDNode* KDNode::build (vector<Triangle*> triangles) const {
+KDNode* KDNode::build (vector<Triangle*> triangles, int depth) const {
 	KDNode* node = new KDNode();
 	node->triangles = triangles;
 	node->left = NULL;
@@ -55,5 +55,28 @@ KDNode* KDNode::build (vector<Triangle*> triangles) const {
 		}
 	}
 
+	//Just so it fails the matches 
+	if(left_triangles.size() == 0 && right_triangles.size()>0) left_triangles = right_triangles;
+	if(right_triangles.size() == 0 && left_triangles.size()>0) right_triangles = left_triangles;
+
+	int matches = 0;
+	for(int i=0; i<right_triangles.size(); i++)
+		for(int j=0; j<left_triangles.size(); j++) {
+			if(right_triangles[i] == left_triangles[j]) matches++;
+		}
+	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
+		node -> left = build(left_triangles, depth+1);
+		node -> right = build(right_triangles, depth+1);
+	} else {
+		node -> left = new KDNode();
+		node -> right = new KDNode();
+		node -> left -> triangles = std::vector<Triangle*> ();
+		node -> right -> triangles = std::vector<Triangle*> ();
+	}
 	return node;
 }
+
+
+
+
+
