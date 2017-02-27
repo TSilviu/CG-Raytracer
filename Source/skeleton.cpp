@@ -6,6 +6,7 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include "ObjLoader.h"
+#include "kd_tree.h"
 
 using namespace std;
 

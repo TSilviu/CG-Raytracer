@@ -3,11 +3,13 @@
 
 #include "TestModel.h"
 #include "BoundingBox.h"
+#include <iostream>
+
 using namespace std;
 
 class KDNode {
 public:
-	//BoundingBox bbox;
+	BoundingBox bbox;
 	KDNode* left;
 	KDNode* right;
 	vector<Triangle> triangles;
