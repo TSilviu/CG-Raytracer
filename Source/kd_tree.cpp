@@ -16,7 +16,9 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	node->left = NULL;
 	node->right = NULL;
 	node->bbox = BoundingBox();
-	if(triangles.size() == 0) 
+
+	cout<<triangles.size()<<endl;
+	if(triangles.size() == 0 || depth > 5) 
 		return node;
 
 	node -> bbox = BoundingBox(triangles);

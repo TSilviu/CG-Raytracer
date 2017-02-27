@@ -19,13 +19,13 @@ glm::vec3 BoundingBox::CompareVertex(glm::vec3 v, glm::vec3 how, int mode) {
 
 int BoundingBox::LongestAxis() {
 	glm::vec3 dif = max - min;
-	if(dif.x > dif.y) {
-		if(dif.x>dif.z)
+	if(dif.x >= dif.y) {
+		if(dif.x>=dif.z)
 			return 0;
-		else if(dif.y > dif.z) 
+		else if(dif.y >= dif.z) 
 			return 2;
 		else 
-			if(dif.y > dif.z) 
+			if(dif.y >= dif.z) 
 				return 1;
 			else return 2;
 		}
