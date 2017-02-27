@@ -4,7 +4,7 @@
 #include "TestModel.h"
 class BoundingBox {
 public:   
-	BoundingBox(std::vector<Triangle>& triangles);
+	BoundingBox(std::vector<Triangle*> triangles);
 	BoundingBox();
 	int LongestAxis();
 	glm::vec3 CompareVertex(glm::vec3 v, glm::vec3 how, int mode);

@@ -12,9 +12,9 @@ public:
 	BoundingBox bbox;
 	KDNode* left;
 	KDNode* right;
-	vector<Triangle> triangles;
+	vector<Triangle*> triangles;
 	KDNode();
-	KDNode* build (vector<Triangle>& triangle) const;
+	KDNode* build (vector<Triangle*> triangle) const;
 };
 
 #endif
