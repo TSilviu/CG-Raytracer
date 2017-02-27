@@ -1,7 +1,11 @@
 #include "kd_tree.h"
 
 glm::vec3 Midpoint(Triangle* t) {
-
+	glm::vec3 midpoint;
+	midpoint.x = (t->v0.x + t->v1.x + t->v2.x)/3.0f;
+	midpoint.y = (t->v0.y + t->v1.y + t->v2.y)/3.0f;
+	midpoint.z = (t->v0.z + t->v1.z + t->v2.z)/3.0f;
+	
 	return glm::vec3(0.f, 0.f, 0.f);
 }
 
