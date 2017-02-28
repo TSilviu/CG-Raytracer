@@ -130,6 +130,7 @@ int main( int argc, char* argv[] )
 
 	KDNode* root = new KDNode();
 	root->build(triangles, 0);
+	BoundingBox box(triangles);
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.

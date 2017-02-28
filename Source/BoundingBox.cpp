@@ -38,7 +38,7 @@ BoundingBox::BoundingBox(std::vector<Triangle> triangles) {
 
 	//Creates the bounding box by finding the min and max 
 	//Coordinates on x,y,z of the triangles
-	for(int i=0; i>triangles.size(); i++) {
+	for(int i=0; i<triangles.size(); i++) {
 		min = CompareVertex(triangles[i].v0, min, 1);
 		min = CompareVertex(triangles[i].v1, min, 1);
 		min = CompareVertex(triangles[i].v2, min, 1);
