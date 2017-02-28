@@ -75,6 +75,7 @@ vec3 lightColor = 14.f * vec3( 1, 1, 1 );
 vec3 indirectLight = 0.5f*vec3( 1, 1, 1 );
 vec3 background(1.0f, 1.0f, 1.0f);
 
+KDNode* root;
 
 //http://computergraphics.stackexchange.com/questions/4248/how-is-anti-aliasing-implemented-in-ray-tracing
 float jitterMatrix[4 * 2] = {
@@ -123,7 +124,7 @@ int main( int argc, char* argv[] )
 		} else return 0;
 	#endif
 
-	KDNode* root = new KDNode();
+	root = new KDNode();
 	root->build(triangles, 0);
 	BoundingBox box(triangles);
 
@@ -265,39 +266,39 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	}
 }
 
-bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
-	closestIntersection.distance = std::numeric_limits<float>::max();
-	closestIntersection.triangleIndex = -1;
-	for (uint i = 0; i < triangles.size(); ++i) {
-		const vec3 v0 = triangles[i].v0;
-		const vec3 e1 = triangles[i].e1;				//Edge1
-		const vec3 e2 = triangles[i].e2;				//Edge2
-		const vec3 tvec = start - v0;
+// bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
+// 	closestIntersection.distance = std::numeric_limits<float>::max();
+// 	closestIntersection.triangleIndex = -1;
+// 	for (uint i = 0; i < triangles.size(); ++i) {
+// 		const vec3 v0 = triangles[i].v0;
+// 		const vec3 e1 = triangles[i].e1;				//Edge1
+// 		const vec3 e2 = triangles[i].e2;				//Edge2
+// 		const vec3 tvec = start - v0;
 
-		const vec3 pvec = cross(dir, e2);
-		const float det = dot(e1, pvec);
+// 		const vec3 pvec = cross(dir, e2);
+// 		const float det = dot(e1, pvec);
 
-		if (abs(det) < kEpsilon) continue;
-		const float invDet = 1.0f / det; 
+// 		if (abs(det) < kEpsilon) continue;
+// 		const float invDet = 1.0f / det; 
 
-		const float u = dot(tvec, pvec) * invDet; 
-		if (u < 0.0f || u > 1.0f) continue; 
-		const vec3 qvec = cross(tvec, e1);
-		const float v = dot(dir, qvec) * invDet;
-		if (v < 0.0f || u + v > 1.0f) continue;
-		const float t = dot(e2, qvec) * invDet;
+// 		const float u = dot(tvec, pvec) * invDet; 
+// 		if (u < 0.0f || u > 1.0f) continue; 
+// 		const vec3 qvec = cross(tvec, e1);
+// 		const float v = dot(dir, qvec) * invDet;
+// 		if (v < 0.0f || u + v > 1.0f) continue;
+// 		const float t = dot(e2, qvec) * invDet;
 
-		if(t>=0.0f && closestIntersection.distance > t) {
-			closestIntersection.position = v0 + u*e1 + v*e2;
-			closestIntersection.distance = t;
-			closestIntersection.triangleIndex = i;
-		}
-	}
-	if(closestIntersection.triangleIndex == -1) {
-		return false;
-	}
-	return true;
-}
+// 		if(t>=0.0f && closestIntersection.distance > t) {
+// 			closestIntersection.position = v0 + u*e1 + v*e2;
+// 			closestIntersection.distance = t;
+// 			closestIntersection.triangleIndex = i;
+// 		}
+// 	}
+// 	if(closestIntersection.triangleIndex == -1) {
+// 		return false;
+// 	}
+// 	return true;
+// }
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	#ifdef TEXTURES_CIMG
@@ -324,7 +325,7 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 		float aux = max(dot(r, n), 0.0f);
 		vec3 D = B*aux;
 
-		if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight))
+		if(root->traverse(root, i.position+r*0.0001f, r, objToLight))
 			if(objToLight.distance < radius)
 				average += vec3(0.f, 0.f, 0.f);
 			else average += D;
@@ -462,7 +463,7 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 vec3 pixelFromTexture(vec2 pos, Texture& texture) {
 	int img_x = (int) (pos.x*texture.width);
 	int img_y = (int) (pos.y*texture.height);
-	return texture.pixels[img_y*texture.width + img_x];//vec3(r, g, b);
+	return texture.pixels[img_y*texture.width + img_x]; // vec3(r, g, b);
 }
 
 

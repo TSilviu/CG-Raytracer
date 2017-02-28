@@ -76,18 +76,54 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	return node;
 }
 
-bool KDNode::traverse(KDNode* root, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
+bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
+	closestIntersection.distance = std::numeric_limits<float>::max();
+	closestIntersection.triangleIndex = -1;
+	for (uint i = 0; i < triangles.size(); ++i) {
+		const glm::vec3 v0 = triangles[i].v0;
+		const glm::vec3 e1 = triangles[i].e1;				//Edge1
+		const glm::vec3 e2 = triangles[i].e2;				//Edge2
+		const glm::vec3 tvec = start - v0;
 
-	if(this == NULL) return false;
+		const glm::vec3 pvec = cross(dir, e2);
+		const float det = dot(e1, pvec);
+
+		if (abs(det) < 0.0001f) continue;
+		const float invDet = 1.0f / det; 
+
+		const float u = dot(tvec, pvec) * invDet; 
+		if (u < 0.0f || u > 1.0f) continue; 
+		const glm::vec3 qvec = cross(tvec, e1);
+		const float v = dot(dir, qvec) * invDet;
+		if (v < 0.0f || u + v > 1.0f) continue;
+		const float t = dot(e2, qvec) * invDet;
+
+		if(t>=0.0f && closestIntersection.distance > t) {
+			closestIntersection.position = v0 + u*e1 + v*e2;
+			closestIntersection.distance = t;
+			closestIntersection.triangleIndex = i;
+		}
+	}
+	if(closestIntersection.triangleIndex == -1) {
+		return false;
+	}
+	return true;
+}
+
+bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
+
+	if(node == NULL) return false;
 
 	if(!bbox.Hit(r_orig, r_dir)) return false;
 
-	bool left_trav = this -> traverse(left, r_orig, r_dir, inter);
-	bool right_trav = false;
-	if(!left_trav) right_trav = this -> traverse(right, r_orig, r_dir, inter);
-
-	if(left == NULL && right == NULL) { //Is leaf?
+	if(node->left == NULL && node->right == NULL) { //Is leaf?
+		return ClosestIntersection(r_orig, r_dir, node->triangles, inter);
 	}
+
+	// If one of the nodes still has children:
+	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter);
+	bool right_trav = false;
+	if(!left_trav) right_trav = this -> traverse(node->right, r_orig, r_dir, inter);
 
 	return false; 
 }
