@@ -22,13 +22,11 @@ int BoundingBox::LongestAxis() {
 	if(dif.x >= dif.y) {
 		if(dif.x>=dif.z)
 			return 0;
-		else if(dif.y >= dif.z) 
-			return 2;
-		else 
-			if(dif.y >= dif.z) 
-				return 1;
-			else return 2;
-		}
+		else return 2;
+	}
+	else if(dif.y >= dif.z) 
+			return 1;
+	else return 2;
 	return -1;
 }
 
