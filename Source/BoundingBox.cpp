@@ -51,3 +51,40 @@ BoundingBox::BoundingBox(std::vector<Triangle> triangles) {
 	this->min = min;
 	this->max = max;
 }
+
+bool BoundingBox::Hit(glm::vec3 r_orig, glm::vec3 r_dir) {
+    float tmin = (min.x - r_orig.x) / r_dir.x; 
+    float tmax = (max.x - r_orig.x) / r_dir.x; 
+ 
+    if (tmin > tmax) std::swap(tmin, tmax); 
+ 
+    float tymin = (min.y - r_orig.y) / r_dir.y; 
+    float tymax = (max.y - r_orig.y) / r_dir.y; 
+ 
+    if (tymin > tymax) std::swap(tymin, tymax); 
+ 
+    if ((tmin > tymax) || (tymin > tmax)) 
+        return false; 
+ 
+    if (tymin > tmin) 
+        tmin = tymin; 
+ 
+    if (tymax < tmax) 
+        tmax = tymax; 
+ 
+    float tzmin = (min.z - r_orig.z) / r_dir.z; 
+    float tzmax = (max.z - r_orig.z) / r_dir.z; 
+ 
+    if (tzmin > tzmax) std::swap(tzmin, tzmax); 
+ 
+    if ((tmin > tzmax) || (tzmin > tmax)) 
+        return false; 
+ 
+    if (tzmin > tmin) 
+        tmin = tzmin; 
+ 
+    if (tzmax < tmax) 
+        tmax = tzmax; 
+ 
+    return true; 
+ }

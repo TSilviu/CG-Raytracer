@@ -17,17 +17,13 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	node->right = NULL;
 	node->bbox = BoundingBox();
 
-	cout<<triangles.size()<<endl;
-	if(triangles.size() == 0 || depth > 5) 
+	if(triangles.size() == 0)  {
 		return node;
+	}
 
+	cout<< depth<<endl;
 	node -> bbox = BoundingBox(triangles);
-	if(triangles.size() == 1) {
-		node -> left = new KDNode();
-		node -> right = new KDNode();
-		//Nodes will be empty and will trigger the first basecase
-		node -> left -> triangles = vector<Triangle>();
-		node -> right -> triangles = vector<Triangle>();
+	if(triangles.size() < 2 || depth > 5) {
 		return node;
 	}
 
@@ -71,15 +67,12 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 		for(int j=0; j<left_triangles.size(); j++) {
 			if(&right_triangles[i] == &left_triangles[j]) matches++;
 		}
+		
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
 		node -> left = build(left_triangles, depth+1);
 		node -> right = build(right_triangles, depth+1);
-	} else {
-		node -> left = new KDNode();
-		node -> right = new KDNode();
-		node -> left -> triangles = std::vector<Triangle> ();
-		node -> right -> triangles = std::vector<Triangle> ();
 	}
+
 	return node;
 }
 
