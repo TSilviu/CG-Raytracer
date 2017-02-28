@@ -76,7 +76,20 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	return node;
 }
 
+bool KDNode::traverse(KDNode* root, glm::vec3 r_orig, glm::vec3 r_dir) {
 
+	if(this == NULL) return false;
 
+	if(!bbox.Hit(r_orig, r_dir)) return false;
+
+	bool left_trav = this -> traverse(left, r_orig, r_dir);
+	bool right_trav = false;
+	if(!left_trav) right_trav = this -> traverse(right, r_orig, r_dir);
+
+	if(left == NULL && right == NULL) { //Is leaf?
+	}
+	
+	return false; 
+}
 
 
