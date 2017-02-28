@@ -1,15 +1,4 @@
-#include <iostream>
-#include <glm/glm.hpp>
-#include <SDL.h>
-#include <limits.h>
-#include <X11/Xlib.h>
-#include "SDLauxiliary.h"
-#include "TestModel.h"
-#include "ObjLoader.h"
-#include "kd_tree.h"
-#include "BoundingBox.h"
-#include "BoundingBox.cpp"
-#include "kd_tree.cpp"
+#include "skeleton.h"
 
 using namespace std;
 
@@ -84,13 +73,7 @@ float jitterMatrix[4 * 2] = {
 };
 /* ----------------------------------------------------------------------------*/
 
-/* STRUCTURES 								*/
-struct Intersection
-{
-    vec3 position;
-    float distance;
-    int triangleIndex;
-};
+
 
 /* FUNCTIONS                                                                   */
 

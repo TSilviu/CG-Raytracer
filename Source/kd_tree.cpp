@@ -88,7 +88,7 @@ bool KDNode::traverse(KDNode* root, glm::vec3 r_orig, glm::vec3 r_dir) {
 
 	if(left == NULL && right == NULL) { //Is leaf?
 	}
-	
+
 	return false; 
 }
 
