@@ -15,8 +15,9 @@ public:
 	KDNode* right;
 	vector<Triangle> triangles;
 	KDNode();
-	KDNode* build(vector<Triangle> triangles, int depth) const;
+	KDNode* build(vector<Triangle>& triangles, int depth);
 	bool traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir,  Intersection& inter);
+	void output(KDNode* node);
 	//bool is leaf?
 };
 

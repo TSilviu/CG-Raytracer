@@ -125,8 +125,9 @@ int main( int argc, char* argv[] )
 	#endif
 
 	root = new KDNode();
-	root->build(triangles, 0);
-	BoundingBox box(triangles);
+	root = root->build(triangles, 0);
+	cout<<root->bbox.min.x<< " "<<root->bbox.max.x <<endl;
+	root->output(root);
 
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
 	t = SDL_GetTicks();	// Set start value for timer.
@@ -226,7 +227,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	#pragma omp parallel for //firstprivate(color)
+	//#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -386,7 +387,7 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
 		const vec3 dir(x_axis, y_axis, f);
 
-		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
+		if(root->traverse(root, camera, cameraR*dir, inter)) {
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 
 				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);

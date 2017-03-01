@@ -10,20 +10,20 @@ glm::vec3 Midpoint(Triangle t) {
 }
 
 KDNode::KDNode() {};
-KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
+KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	KDNode* node = new KDNode();
 	node->triangles = triangles;
 	node->left = NULL;
 	node->right = NULL;
 	node->bbox = BoundingBox();
 
+	cout<<triangles.size()<<endl;
 	if(triangles.size() == 0)  {
 		return node;
 	}
 
-	cout<< depth<<endl;
 	node -> bbox = BoundingBox(triangles);
-	if(triangles.size() < 2 || depth > 5) {
+	if(triangles.size() < 4 || depth > 10) {
 		return node;
 	}
 
@@ -32,7 +32,8 @@ KDNode* KDNode::build(vector<Triangle> triangles, int depth) const {
 	for(int i=0; i<triangles.size(); i++) {
 		midpoint += Midpoint(triangles[i]);
 	}
-	midpoint /= triangles.size();
+	midpoint *= 1.0f/triangles.size();
+	cout<<midpoint.x<< " " << midpoint.y<<" "<<endl;
 
 	//Partition tiriangles:
 	std::vector<Triangle> left_triangles;
@@ -110,8 +111,20 @@ bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vecto
 	return true;
 }
 
-bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
+void KDNode::output(KDNode* node) {
+	if(node != NULL) {
+		for (uint i = 0; i < node->triangles.size(); ++i) {
+		}
+		if(node->left != NULL) {
+		node->output(node->left);
+		}
+		if(node->right != NULL) {
+		node->output(node->right);
+		}
+	} else {cout<<"Shoudl not get here"<<endl;}
+}
 
+bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
 	if(node == NULL) return false;
 
 	if(!bbox.Hit(r_orig, r_dir)) return false;
@@ -122,10 +135,9 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 
 	// If one of the nodes still has children:
 	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter);
-	bool right_trav = false;
-	if(!left_trav) right_trav = this -> traverse(node->right, r_orig, r_dir, inter);
+	bool right_trav= this -> traverse(node->right, r_orig, r_dir, inter);
 
-	return false; 
+	return left_trav || right_trav; 
 }
 
 
