@@ -2,9 +2,18 @@
 
 glm::vec3 Midpoint(Triangle t) {
 	glm::vec3 midpoint;
-	midpoint.x = (t.v0.x + t.v1.x + t.v2.x)/3.0f;
-	midpoint.y = (t.v0.y + t.v1.y + t.v2.y)/3.0f;
-	midpoint.z = (t.v0.z + t.v1.z + t.v2.z)/3.0f;
+
+	float aux_min = std::min(std::min(t.v0.x, t.v1.x), t.v2.x);
+	float aux_max = std::min(std::min(t.v0.x, t.v1.x), t.v2.x);
+	midpoint.x = aux_min + (aux_max - aux_min)/2.0f;
+
+	aux_min = std::min(std::min(t.v0.y, t.v1.y), t.v2.y);
+	aux_max = std::min(std::min(t.v0.y, t.v1.y), t.v2.y);
+	midpoint.y = aux_min + (aux_max - aux_min)/2.0f;
+
+	aux_min = std::min(std::min(t.v0.z, t.v1.z), t.v2.z);
+	aux_max = std::min(std::min(t.v0.z, t.v1.z), t.v2.z);
+	midpoint.z = aux_min + (aux_max - aux_min)/2.0f;
 
 	return midpoint;
 }
