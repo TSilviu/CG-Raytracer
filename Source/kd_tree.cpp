@@ -84,7 +84,6 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 			//if(&right_triangles[i] == &left_triangles[j]) matches++;
 		}
 	
-	cout<<"MATHCHES "<< matches<<endl;
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
 		node -> left = build(left_triangles, depth+1);
 		node -> right = build(right_triangles, depth+1);
