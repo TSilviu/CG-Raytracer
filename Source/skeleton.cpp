@@ -18,7 +18,7 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
-// #define CORNELL_BOX
+#define CORNELL_BOX
 //#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG

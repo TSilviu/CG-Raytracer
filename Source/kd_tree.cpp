@@ -4,18 +4,24 @@ glm::vec3 Midpoint(Triangle t) {
 	glm::vec3 midpoint;
 
 	float aux_min = std::min(std::min(t.v0.x, t.v1.x), t.v2.x);
-	float aux_max = std::min(std::min(t.v0.x, t.v1.x), t.v2.x);
+	float aux_max = std::max(std::max(t.v0.x, t.v1.x), t.v2.x);
 	midpoint.x = aux_min + (aux_max - aux_min)/2.0f;
 
 	aux_min = std::min(std::min(t.v0.y, t.v1.y), t.v2.y);
-	aux_max = std::min(std::min(t.v0.y, t.v1.y), t.v2.y);
+	aux_max = std::max(std::max(t.v0.y, t.v1.y), t.v2.y);
 	midpoint.y = aux_min + (aux_max - aux_min)/2.0f;
 
 	aux_min = std::min(std::min(t.v0.z, t.v1.z), t.v2.z);
-	aux_max = std::min(std::min(t.v0.z, t.v1.z), t.v2.z);
+	aux_max = std::max(std::max(t.v0.z, t.v1.z), t.v2.z);
 	midpoint.z = aux_min + (aux_max - aux_min)/2.0f;
 
 	return midpoint;
+}
+
+bool Match(Triangle t0, Triangle t1) {
+	if(t0.v0 == t1.v0 && t0.v1 == t1.v1 && t0.v2 == t1.v2) 
+		return true;
+	return false;
 }
 
 KDNode::KDNode() {};
@@ -74,13 +80,15 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	int matches = 0;
 	for(int i=0; i<right_triangles.size(); i++)
 		for(int j=0; j<left_triangles.size(); j++) {
-			if(&right_triangles[i] == &left_triangles[j]) matches++;
+			if(Match(right_triangles[i], left_triangles[j])) matches++;
+			//if(&right_triangles[i] == &left_triangles[j]) matches++;
 		}
-		
+	
+	cout<<"MATHCHES "<< matches<<endl;
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
 		node -> left = build(left_triangles, depth+1);
 		node -> right = build(right_triangles, depth+1);
-	}
+	} 
 
 	return node;
 }
