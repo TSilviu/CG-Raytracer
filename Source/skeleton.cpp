@@ -18,7 +18,7 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
-#define CORNELL_BOX
+// #define CORNELL_BOX
 //#define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
@@ -118,7 +118,7 @@ int main( int argc, char* argv[] )
 	#ifdef CORNELL_BOX
 		LoadTestModel(triangles);
 	#else 
-		char const* filename = "Models/LowPolyBody.obj";
+		char const* filename = "Models/teapot_high_poly.obj";
 		if(LoadObject(triangles, filename)) {
 			printf("Model Loaded succesfuly\n");
 		} else return 0;
@@ -227,7 +227,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	//#pragma omp parallel for //firstprivate(color)
+	#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -393,7 +393,7 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);
 				vec3 texture_color = pixelFromTexture(bary_coords, texture);
 			#else
-				vec3 texture_color = triangles[inter.triangleIndex].color;
+				vec3 texture_color = inter.color;
 			#endif
 		    vec3 color_reflections = ApplyReflexions(triangles, dir, inter, texture_color, 0);
 			color += color_reflections*(indirectLight + directLight);

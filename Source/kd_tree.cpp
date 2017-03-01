@@ -23,7 +23,7 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	}
 
 	node -> bbox = BoundingBox(triangles);
-	if(triangles.size() < 4 || depth > 10) {
+	if(triangles.size() < 5 || depth > 20) {
 		return node;
 	}
 
@@ -33,7 +33,6 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 		midpoint += Midpoint(triangles[i]);
 	}
 	midpoint *= 1.0f/triangles.size();
-	cout<<midpoint.x<< " " << midpoint.y<<" "<<endl;
 
 	//Partition tiriangles:
 	std::vector<Triangle> left_triangles;
@@ -103,6 +102,7 @@ bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vecto
 			closestIntersection.position = v0 + u*e1 + v*e2;
 			closestIntersection.distance = t;
 			closestIntersection.triangleIndex = i;
+			closestIntersection.color = triangles[i].color;
 		}
 	}
 	if(closestIntersection.triangleIndex == -1) {
@@ -121,7 +121,7 @@ void KDNode::output(KDNode* node) {
 		if(node->right != NULL) {
 		node->output(node->right);
 		}
-	} else {cout<<"Shoudl not get here"<<endl;}
+	} else {cout<<"Should not get here"<<endl;}
 }
 
 bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
