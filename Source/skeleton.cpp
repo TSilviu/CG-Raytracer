@@ -227,7 +227,7 @@ void Draw(const vector<Triangle>& triangles)
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 
-	#pragma omp parallel for //firstprivate(color)
+	//#pragma omp parallel for //firstprivate(color)
 	for( int y=0; y<SCREEN_HEIGHT; ++y )
 	{
 		for( int x=0; x<SCREEN_WIDTH; ++x )
@@ -326,10 +326,14 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 		float aux = max(dot(r, n), 0.0f);
 		vec3 D = B*aux;
 
-		if(root->traverse(root, i.position+r*0.0001f, r, objToLight))
+		objToLight.distance = std::numeric_limits<float>::max();
+		if(root->traverse(root, i.position+r*0.0001f, r, objToLight, 0)) {
+			// cout<<"Debug message from traversae"<<endl;
+			// depthT = 0;
 			if(objToLight.distance < radius)
 				average += vec3(0.f, 0.f, 0.f);
 			else average += D;
+		}
 		else average += D;
 	}
 	return average/(float) SoftShadowsSamples;
@@ -387,7 +391,9 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		const float y_axis = (y - SCREEN_HEIGHT/2.0f + jitterMatrix[2*sample + 1])/(SCREEN_HEIGHT/2.0);
 		const vec3 dir(x_axis, y_axis, f);
 
-		if(root->traverse(root, camera, cameraR*dir, inter)) {
+		inter.distance = std::numeric_limits<float>::max();
+		if(root->traverse(root, camera, cameraR*dir, inter, 0)) {
+			// cout<<"Debug message from traverse"<<endl;
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 
 				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);

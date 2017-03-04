@@ -27,23 +27,23 @@ bool Match(Triangle t0, Triangle t1) {
 KDNode::KDNode() {};
 KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	KDNode* node = new KDNode();
+	node->is_leaf = true;
 	node->triangles = triangles;
 	node->left = NULL;
 	node->right = NULL;
 	node->bbox = BoundingBox();
 
-	cout<<triangles.size()<<endl;
 	if(triangles.size() == 0)  {
 		return node;
 	}
 
 	node -> bbox = BoundingBox(triangles);
-	if(triangles.size() < 5 || depth > 20) {
+	if(triangles.size() < 5 || depth > 3) {
 		return node;
 	}
 
 	//Compute midpoint for all triangles:
-	glm::vec3 midpoint;
+	glm::vec3 midpoint(0.f, 0.f, 0.f);
 	for(int i=0; i<triangles.size(); i++) {
 		midpoint += Midpoint(triangles[i]);
 	}
@@ -87,8 +87,8 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
 		node -> left = build(left_triangles, depth+1);
 		node -> right = build(right_triangles, depth+1);
-	} 
-
+	}
+	node->is_leaf = false;
 	return node;
 }
 
@@ -140,20 +140,35 @@ void KDNode::output(KDNode* node) {
 	} else {cout<<"Should not get here"<<endl;}
 }
 
-bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter) {
+bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter, int depth) {
 	if(node == NULL) return false;
 
 	if(!bbox.Hit(r_orig, r_dir)) return false;
 
-	if(node->left == NULL && node->right == NULL) { //Is leaf?
-		return ClosestIntersection(r_orig, r_dir, node->triangles, inter);
+	// cout<<"hello from here"<<endl;
+	if(node->is_leaf) { //Is leaf?
+	//depthT++;
+	// cout<<"Got here, depth: "<< depth <<" "<< node->triangles.size()<<endl;
+		Intersection i;
+		if(ClosestIntersection(r_orig, r_dir, node->triangles, i)) {
+			if(i.distance < inter.distance)  {
+				inter = i;
+				return true;
+			}
+		else 
+			return false;
+		}
 	}
 
 	// If one of the nodes still has children:
-	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter);
-	bool right_trav= this -> traverse(node->right, r_orig, r_dir, inter);
+	// depthT++;
+	// cout<<"Got here, depth: "<< depthT <<endl;
 
-	return left_trav || right_trav; 
+	// Intersection i1, i2;m
+	bool right_trav = this -> traverse(node->right, r_orig, r_dir, inter, depth + 1);
+	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter, depth + 1);
+
+	return  right_trav || left_trav; 
 }
 
 

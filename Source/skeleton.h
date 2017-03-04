@@ -11,4 +11,5 @@ struct Intersection
     glm::vec3 color;
 };
 
+int depthT = 0;
 #endif
