@@ -140,35 +140,85 @@ void KDNode::output(KDNode* node) {
 	} else {cout<<"Should not get here"<<endl;}
 }
 
+// bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter, int depth) {
+// 	if(node == NULL) return false;
+
+// 	if(!bbox.Hit(r_orig, r_dir)) return false;
+// 	else { cout<<node->triangles.size()<<endl; }
+
+// 	// cout<<"hello from here"<<endl;
+// 	if(node->is_leaf) { //Is leaf?
+// 	//depthT++;
+// 	// cout<<"Got here, depth: "<< depth <<" "<< node->triangles.size()<<endl;
+// 		Intersection i;
+// 		if(ClosestIntersection(r_orig, r_dir, node->triangles, i)) {
+// 			if(i.distance < inter.distance)  {
+// 				inter = i;
+// 				return true;
+// 			}
+// 		else 
+// 			return false;
+// 		}
+// 	}
+
+// 	// If one of the nodes still has children:
+// 	// depthT++;
+// 	// cout<<"Got here, depth: "<< depthT <<endl;
+
+// 	// Intersection i1, i2;m
+// 	bool right_trav = this -> traverse(node->right, r_orig, r_dir, inter, depth + 1);
+// 	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter, depth + 1);
+
+// 	return  right_trav || left_trav; 
+// }
+
 bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter, int depth) {
+	std::stack<StackItem> stack;
+
 	if(node == NULL) return false;
 
-	if(!bbox.Hit(r_orig, r_dir)) return false;
+	StackItem item;
+	item.node = node;
+	item.t = 0;//replace
+	stack.push(item);
 
-	// cout<<"hello from here"<<endl;
-	if(node->is_leaf) { //Is leaf?
-	//depthT++;
-	// cout<<"Got here, depth: "<< depth <<" "<< node->triangles.size()<<endl;
-		Intersection i;
-		if(ClosestIntersection(r_orig, r_dir, node->triangles, i)) {
-			if(i.distance < inter.distance)  {
-				inter = i;
-				return true;
+	if(!node->bbox.Hit(r_orig, r_dir)) return false;
+
+	while(!stack.empty()) {
+		node = stack.top().node;
+		stack.pop();
+
+		if(!node->is_leaf) {
+			bool left_hit = node->left->bbox.Hit(r_orig, r_dir);
+			bool right_hit = node->right->bbox.Hit(r_orig, r_dir);
+			if(left_hit && right_hit) {
+				//push the node with the larger t value first;
+				item.node = node->left;
+				item.t = 0;
+				stack.push(item);
+
+				item.node = node->right;
+				item.t = 0;
+				stack.push(item);
+			} else if(left_hit) {
+				item.node = node->left;
+				item.t = 0; 
+				stack.push(item);
 			}
-		else 
-			return false;
+			else if(right_hit) {
+				item.node = node->right;
+				item.t = 0; 
+				stack.push(item);
+			}
+		}
+		else {
+			Intersection i;
+			if(ClosestIntersection(r_orig, r_dir, node->triangles, i)) {
+			}
 		}
 	}
 
-	// If one of the nodes still has children:
-	// depthT++;
-	// cout<<"Got here, depth: "<< depthT <<endl;
-
-	// Intersection i1, i2;m
-	bool right_trav = this -> traverse(node->right, r_orig, r_dir, inter, depth + 1);
-	bool left_trav = this -> traverse(node->left, r_orig, r_dir, inter, depth + 1);
-
-	return  right_trav || left_trav; 
+	return  false; 
 }
 
 

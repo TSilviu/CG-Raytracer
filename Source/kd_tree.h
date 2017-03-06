@@ -5,6 +5,7 @@
 #include "BoundingBox.h"
 #include "skeleton.h"
 #include <iostream>
+#include <stack> 
 
 using namespace std;
 bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection);
@@ -20,5 +21,10 @@ public:
 	bool traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir,  Intersection& inter, int depth);
 	void output(KDNode* node);
 };
+
+struct StackItem {
+	KDNode *node;
+	float t;
+}; 
 
 #endif

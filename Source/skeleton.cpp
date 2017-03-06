@@ -328,8 +328,8 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 
 		objToLight.distance = std::numeric_limits<float>::max();
 		if(root->traverse(root, i.position+r*0.0001f, r, objToLight, 0)) {
-			// cout<<"Debug message from traversae"<<endl;
-			// depthT = 0;
+			cout<<"Debug message from traversae"<<endl;
+			depthT = 0;
 			if(objToLight.distance < radius)
 				average += vec3(0.f, 0.f, 0.f);
 			else average += D;
@@ -393,7 +393,7 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 
 		inter.distance = std::numeric_limits<float>::max();
 		if(root->traverse(root, camera, cameraR*dir, inter, 0)) {
-			// cout<<"Debug message from traverse"<<endl;
+			cout<<"Debug message from traverse"<<endl;
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 
 				vec2 bary_coords = barycentricCoordinates(triangles[inter.triangleIndex], inter.position);

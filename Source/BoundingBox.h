@@ -6,7 +6,7 @@ class BoundingBox {
 public:   
 	BoundingBox(std::vector<Triangle> triangles);
 	BoundingBox();
-	bool Hit(glm::vec3 r_orig, glm::vec3 r_dir);
+	bool Hit(glm::vec3 r_orig, glm::vec3 r_dir, glm::vec3& t);
 	int LongestAxis();
 	glm::vec3 CompareVertex(glm::vec3 v, glm::vec3 how, int mode);
 	glm::vec3 min;

@@ -83,6 +83,8 @@ bool BoundingBox::Hit(glm::vec3 r_orig, glm::vec3 r_dir) {
  
     if (tzmax < tmax) 
         tmax = tzmax; 
- 
-    return true; 
+ 	
+ 	glm::vec3 t(tmin, tymin, tzmin);
+ 	
+	return true; 
  }
