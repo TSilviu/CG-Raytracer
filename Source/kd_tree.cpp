@@ -38,7 +38,7 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	}
 
 	node -> bbox = BoundingBox(triangles);
-	if(triangles.size() < 5 || depth > 3) {
+	if(triangles.size() < 2 || depth > 5) {
 		return node;
 	}
 
@@ -85,10 +85,11 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 		}
 	
 	if((float)matches/left_triangles.size() < 0.5f && (float) matches/right_triangles.size() < 0.5f) {
+		node->is_leaf = false;
 		node -> left = build(left_triangles, depth+1);
 		node -> right = build(right_triangles, depth+1);
 	}
-	node->is_leaf = false;
+
 	return node;
 }
 
@@ -130,12 +131,13 @@ bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vecto
 void KDNode::output(KDNode* node) {
 	if(node != NULL) {
 		for (uint i = 0; i < node->triangles.size(); ++i) {
+			cout<<"T"<<endl;
 		}
 		if(node->left != NULL) {
-		node->output(node->left);
+			node->output(node->left);
 		}
 		if(node->right != NULL) {
-		node->output(node->right);
+			node->output(node->right);
 		}
 	} else {cout<<"Should not get here"<<endl;}
 }
@@ -188,10 +190,10 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 	float tr, tl;
 	maxt = std::numeric_limits<float>::max();
 	while(1) {
-
 		if(!node->is_leaf) {
 			bool left_hit = node->left->bbox.Hit(r_orig, r_dir, tl);
 			bool right_hit = node->right->bbox.Hit(r_orig, r_dir, tr);
+			// cout<<tl<< " "<<tr<< endl;
 			if(left_hit && right_hit) {
 				//push the node with the larger t value first;
 				if(tr > tl) {
@@ -228,7 +230,6 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 					maxt = inter.distance;
 					inter = i;
 				}
-				return true;
 			}
 		}
 		if(stack.empty()) {

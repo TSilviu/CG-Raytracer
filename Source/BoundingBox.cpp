@@ -1,8 +1,5 @@
 #include "BoundingBox.h"
-
-BoundingBox::BoundingBox() {
-
-}
+#include <iostream>
 
 glm::vec3 BoundingBox::CompareVertex(glm::vec3 v, glm::vec3 how, int mode) {
 	if(mode == 0) { //Compare to find the maximum  
@@ -28,6 +25,13 @@ int BoundingBox::LongestAxis() {
 			return 1;
 	else return 2;
 	return -1;
+}
+
+BoundingBox::BoundingBox() {
+	glm::vec3 min(1000.f, 1000.f, 1000.f);
+	glm::vec3 max(-1000.f, -1000.f, -1000.f);
+	this->min = min;
+	this->max = max;
 }
 
 BoundingBox::BoundingBox(std::vector<Triangle> triangles) {
