@@ -50,7 +50,7 @@ BoundingBox::BoundingBox(std::vector<Triangle> triangles) {
 	this->max = max;
 }
 
-bool BoundingBox::Hit(glm::vec3 r_orig, glm::vec3 r_dir) {
+bool BoundingBox::Hit(glm::vec3 r_orig, glm::vec3 r_dir, float& t) {
     float tmin = (min.x - r_orig.x) / r_dir.x; 
     float tmax = (max.x - r_orig.x) / r_dir.x; 
  
@@ -84,7 +84,8 @@ bool BoundingBox::Hit(glm::vec3 r_orig, glm::vec3 r_dir) {
     if (tzmax < tmax) 
         tmax = tzmax; 
  	
- 	glm::vec3 t(tmin, tymin, tzmin);
- 	
+ 	//t = glm::vec3(tmin, tymin, tzmin);
+    t = glm::length(glm::vec3(tmin, tymin, tzmin));
+    
 	return true; 
  }

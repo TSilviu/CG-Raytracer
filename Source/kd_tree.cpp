@@ -177,46 +177,67 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 
 	if(node == NULL) return false;
 
+	inter.distance = std::numeric_limits<float>::max();
+	inter.triangleIndex = -1;
+
+	float maxt;
+	if(!node->bbox.Hit(r_orig, r_dir, maxt)) return false;
+
 	StackItem item;
 	item.node = node;
-	item.t = 0;//replace
+	item.t = maxt;  //replace
 	stack.push(item);
 
-	if(!node->bbox.Hit(r_orig, r_dir)) return false;
-
+	maxt = std::numeric_limits<float>::max();
 	while(!stack.empty()) {
 		node = stack.top().node;
 		stack.pop();
 
 		if(!node->is_leaf) {
-			bool left_hit = node->left->bbox.Hit(r_orig, r_dir);
-			bool right_hit = node->right->bbox.Hit(r_orig, r_dir);
+			float tr, tl;
+			bool left_hit = node->left->bbox.Hit(r_orig, r_dir, tr);
+			bool right_hit = node->right->bbox.Hit(r_orig, r_dir, tl);
 			if(left_hit && right_hit) {
 				//push the node with the larger t value first;
-				item.node = node->left;
-				item.t = 0;
-				stack.push(item);
+				if(tr > tl) {
+					item.node = node->left;
+					item.t = tl;
+					stack.push(item);
 
-				item.node = node->right;
-				item.t = 0;
-				stack.push(item);
-			} else if(left_hit) {
+					item.node = node->right;
+					item.t = tr;
+					stack.push(item);
+				}
+				else {
+					item.node = node->right;
+					item.t = tr;
+					stack.push(item);
+
+					item.node = node->left;
+					item.t = tl;
+					stack.push(item);
+				}
+			} else if(left_hit && tl < maxt) {
 				item.node = node->left;
-				item.t = 0; 
+				item.t = tl; 
 				stack.push(item);
-			}
-			else if(right_hit) {
+			} else if(right_hit && tr < maxt) {
 				item.node = node->right;
-				item.t = 0; 
+				item.t = tr; 
 				stack.push(item);
 			}
 		}
 		else {
 			Intersection i;
 			if(ClosestIntersection(r_orig, r_dir, node->triangles, i)) {
+				if(i.distance < inter.distance) {
+					maxt = inter.distance;
+					inter = i;
+				}
 			}
 		}
 	}
+	if(inter.triangleIndex != -1) return true;
 
 	return  false; 
 }
