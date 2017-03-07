@@ -184,47 +184,41 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 	if(!node->bbox.Hit(r_orig, r_dir, maxt)) return false;
 
 	StackItem item;
-	item.node = node;
-	item.t = maxt;  //replace
-	stack.push(item);
-
+	
+	float tr, tl;
 	maxt = std::numeric_limits<float>::max();
-	while(!stack.empty()) {
-		node = stack.top().node;
-		stack.pop();
+	while(1) {
 
 		if(!node->is_leaf) {
-			float tr, tl;
-			bool left_hit = node->left->bbox.Hit(r_orig, r_dir, tr);
-			bool right_hit = node->right->bbox.Hit(r_orig, r_dir, tl);
+			bool left_hit = node->left->bbox.Hit(r_orig, r_dir, tl);
+			bool right_hit = node->right->bbox.Hit(r_orig, r_dir, tr);
 			if(left_hit && right_hit) {
 				//push the node with the larger t value first;
 				if(tr > tl) {
-					item.node = node->left;
-					item.t = tl;
-					stack.push(item);
+					//if(tl < maxt) {
+						item.node = node->left;
+						item.t = tl;
+						stack.push(item);
+					//}
 
-					item.node = node->right;
-					item.t = tr;
-					stack.push(item);
+					node = node -> right;
+					continue;
 				}
 				else {
 					item.node = node->right;
 					item.t = tr;
 					stack.push(item);
 
-					item.node = node->left;
-					item.t = tl;
-					stack.push(item);
+					node = node -> left;
+					continue;
 				}
+
 			} else if(left_hit && tl < maxt) {
-				item.node = node->left;
-				item.t = tl; 
-				stack.push(item);
+				node = node->left;
+				continue;
 			} else if(right_hit && tr < maxt) {
-				item.node = node->right;
-				item.t = tr; 
-				stack.push(item);
+				node = node->right;
+				continue;
 			}
 		}
 		else {
@@ -234,7 +228,16 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 					maxt = inter.distance;
 					inter = i;
 				}
+				return true;
 			}
+		}
+		if(stack.empty()) {
+			if(inter.triangleIndex != -1) return true;
+			else return false;
+		}
+		else{ 
+			node = stack.top().node;
+			stack.pop();
 		}
 	}
 	if(inter.triangleIndex != -1) return true;
