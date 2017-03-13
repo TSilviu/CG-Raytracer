@@ -19,7 +19,7 @@ using glm::vec2;
 using glm::mat3;
 
 #define CORNELL_BOX
-//#define TEXTURES_CIMG
+// #define TEXTURES_CIMG
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
@@ -118,7 +118,7 @@ int main( int argc, char* argv[] )
 	#ifdef CORNELL_BOX
 		LoadTestModel(triangles);
 	#else 
-		char const* filename = "Models/teapot_high_poly.obj";
+		char const* filename = "Models/triangle_object.obj";
 		if(LoadObject(triangles, filename)) {
 			printf("Model Loaded succesfuly\n");
 		} else return 0;
@@ -465,6 +465,13 @@ vec2 barycentricCoordinates(Triangle t, vec3 p) {
 
 	return bary.x*auv + bary.y*buv + bary.z*cuv;
 }
+
+// vec3 interpolatedNormal(Triangle t, vec3 bary) {
+// 	vec3 n1 = t.normals[0];
+// 	vec3 n2 = t.normals[1];
+// 	vec3 n3 = t.normals[2];
+// 	return n1*bary.x + n2*bary.y + n3*bary.z;
+// }
 
 #ifdef TEXTURES_CIMG
 vec3 pixelFromTexture(vec2 pos, Texture& texture) {
