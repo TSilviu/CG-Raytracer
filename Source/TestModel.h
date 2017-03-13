@@ -38,6 +38,14 @@ public:
 		this->uv2 = uv2;
 	}
 	
+	void SetNormal(glm::vec3 normal) {
+		this->normal = normal;
+	}
+	
+	void SetVertexNormals() {
+
+	}
+	
 	void ComputeNormal()
 	{
 		this->e1 = v1-v0;
