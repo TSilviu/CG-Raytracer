@@ -12,6 +12,11 @@ Extras:
  - KD Trees (Implemented, tested on 6500 poly model which gets rendered in 4s with AA on, there are a few issues which can be seen on the default model caused by the fact that we are sending the trinagle structs everywhere instead of sending pointers which causes some chache and malloc problems) 
  - Normal interpolation (Implemented, but we need some new models to test it)
 
+TODO: 
+ - Implement the SAH to find better KD-Tree splits
+ - Implement a faster box collision for the KD-Trees
+ - Fix the KD-Trees pointer issues
+
 
 Textures require (they can be disabled by changing the define statement from the code and it will compile just fine without them): 
   - CImg library, which requires:
