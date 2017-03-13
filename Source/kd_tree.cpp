@@ -175,7 +175,7 @@ void KDNode::output(KDNode* node) {
 // }
 
 bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersection& inter, int depth) {
-	std::stack<StackItem> stack;
+	std::vector<StackItem> stack;
 
 	if(node == NULL) return false;
 
@@ -200,7 +200,7 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 					//if(tl < maxt) {
 						item.node = node->left;
 						item.t = tl;
-						stack.push(item);
+						stack.push_back(item);
 					//}
 
 					node = node -> right;
@@ -209,7 +209,7 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 				else {
 					item.node = node->right;
 					item.t = tr;
-					stack.push(item);
+					stack.push_back(item);
 
 					node = node -> left;
 					continue;
@@ -237,8 +237,10 @@ bool KDNode::traverse(KDNode* node, glm::vec3 r_orig, glm::vec3 r_dir, Intersect
 			else return false;
 		}
 		else{ 
-			node = stack.top().node;
-			stack.pop();
+			node = stack.back().node;
+			stack.pop_back();
+			// node = stack.top().node;
+			// stack.pop();
 		}
 	}
 	if(inter.triangleIndex != -1) return true;
