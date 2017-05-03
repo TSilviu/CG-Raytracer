@@ -6,9 +6,9 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include "ObjLoader.h"
-#include "kd_tree.h"
 #include "BoundingBox.h"
 #include "BoundingBox.cpp"
+#include "kd_tree.h"
 #include "kd_tree.cpp"
 #include "skeleton.h"
 
@@ -18,8 +18,9 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
-// #define CORNELL_BOX
+#define CORNELL_BOX
 // #define TEXTURES_CIMG
+#define KDTREES
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
@@ -267,6 +268,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 	}
 }
 
+// #ifndef KDTREES
 // bool ClosestIntersection(const vec3 start, const vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 // 	closestIntersection.distance = std::numeric_limits<float>::max();
 // 	closestIntersection.triangleIndex = -1;
@@ -300,6 +302,7 @@ void Interpolate( vec3 a, vec3 b, vector<vec3>& result ) {
 // 	}
 // 	return true;
 // }
+// #endif
 
 vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 	#ifdef TEXTURES_CIMG
@@ -327,7 +330,11 @@ vec3 DirectLight( const Intersection& i, const vector<Triangle>& triangles  ) {
 		vec3 D = B*aux;
 
 		objToLight.distance = std::numeric_limits<float>::max();
+		#ifdef KDTREES
 		if(root->traverse(root, i.position+r*0.0001f, r, objToLight, 0)) {
+		#else
+		if(ClosestIntersection(i.position+r*0.0001f, r, triangles, objToLight)) {
+		#endif
 			// cout<<"Debug message from traversae"<<endl;
 			depthT = 0;
 			if(objToLight.distance < radius)
@@ -392,7 +399,11 @@ void ApplyAntiAliasing(int x, int y, vec3& color, const vector<Triangle>& triang
 		const vec3 dir(x_axis, y_axis, f);
 
 		inter.distance = std::numeric_limits<float>::max();
+		#ifdef KDTREES
 		if(root->traverse(root, camera, cameraR*dir, inter, 0)) {
+		#else
+		if(ClosestIntersection(camera, cameraR*dir, triangles, inter)) {
+		#endif	
 			// cout<<"Debug message from traverse"<<endl;
 			vec3 directLight = DirectLight(inter, triangles);
 			#ifdef TEXTURES_CIMG 

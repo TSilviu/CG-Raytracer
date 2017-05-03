@@ -93,6 +93,7 @@ KDNode* KDNode::build(vector<Triangle>& triangles, int depth)  {
 	return node;
 }
 
+// #ifdef KDTREES
 bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vector<Triangle>& triangles, Intersection& closestIntersection) {
 	closestIntersection.distance = std::numeric_limits<float>::max();
 	closestIntersection.triangleIndex = -1;
@@ -127,6 +128,7 @@ bool ClosestIntersection(const glm::vec3 start, const glm::vec3 dir, const vecto
 	}
 	return true;
 }
+// #endif
 
 void KDNode::output(KDNode* node) {
 	if(node != NULL) {
