@@ -20,9 +20,9 @@ using glm::mat3;
 
 
 //Enable/disable these
-#define CORNELL_BOX
+// #define CORNELL_BOX
 // #define TEXTURES_CIMG
-#define KDTREES
+// #define KDTREES
 //EOF ifdef vars
 
 
