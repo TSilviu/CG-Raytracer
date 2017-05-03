@@ -18,9 +18,14 @@ using glm::vec3;
 using glm::vec2;
 using glm::mat3;
 
+
+//Enable/disable these
 #define CORNELL_BOX
 // #define TEXTURES_CIMG
 #define KDTREES
+//EOF ifdef vars
+
+
 
 #ifdef TEXTURES_CIMG
 	#define cimg_use_jpeg
