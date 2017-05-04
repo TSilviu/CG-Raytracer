@@ -1,9 +1,9 @@
 FILE=skeleton
 
-FILE2=skeleton_motionBlur
 ########
 #   Directories
 S_DIR=Source
+S_DIR_MB=Source/MotionBlur
 B_DIR=Build
 
 ########
@@ -65,8 +65,8 @@ softshadows :  $(S_DIR)/$(FILE).cpp $(S_DIR)/SDLauxiliary.h $(S_DIR)/TestModel.h
 	$(CC) -D CORNELL_BOX -D SOFTSHADOWS -D SoftShadowsSamples=10 $(CC_OPTS) -o $(B_DIR)/$(FILE).o $(S_DIR)/$(FILE).cpp $(SDL_CFLAGS) $(GLM_CFLAGS)
 	$(CC) $(LN_OPTS) -o $(EXEC) $(OBJ) $(SDL_LDFLAGS)
 
-motionblur : $(S_DIR)/$(FILE2).cpp $(S_DIR)/SDLauxiliary.h $(S_DIR)/TestModel.h
-	$(CC) -D CORNELL_BOX -D SOFTSHADOWS -D SoftShadowsSamples=10 $(CC_OPTS) -o $(B_DIR)/$(FILE2).o $(S_DIR)/$(FILE2).cpp $(SDL_CFLAGS) $(GLM_CFLAGS)
+motionblur : $(S_DIR_MB)/$(FILE).cpp $(S_DIR_MB)/SDLauxiliary.h $(S_DIR_MB)/TestModel.h
+	$(CC) -D CORNELL_BOX -D SOFTSHADOWS -D SoftShadowsSamples=10 $(CC_OPTS) -o $(B_DIR)/$(FILE).o $(S_DIR_MB)/$(FILE).cpp $(SDL_CFLAGS) $(GLM_CFLAGS)
 	$(CC) $(LN_OPTS) -o $(EXEC) $(OBJ) $(SDL_LDFLAGS)
 clean:
 	rm -f $(B_DIR)/* 
