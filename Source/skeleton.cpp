@@ -51,11 +51,24 @@ using glm::mat3;
 #define MoveSpeed 0.2f
 
 #define LightMoveSpeed 0.2f
+
 #define AntiAliasingSamples 4 //For more than 4, the jitter matrix has to be changed
-#define DOFSamples 0
+
+#ifndef cmdDOF
+	#define DOFSamples 0
+#endif
+
 #define Aperture 1.0f
-#define SoftShadowsSamples 1
-#define ReflexionDepth 1
+
+#ifndef SOFTSHADOWS
+	#define SoftShadowsSamples 1
+#endif
+
+#ifdef MIRRORS 
+	#define ReflexionDepth 5
+#else
+	#define ReflexionDepth 0
+#endif
 
 #define kEpsilon 0.0001
 /* ----------------------------------------------------------------------------*/
